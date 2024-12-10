@@ -1,0 +1,37 @@
+name: Build U-Boot AX6000
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo -E apt-get update
+          sudo -E apt-get install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev device-tree-compiler qemu-user-static
+
+      - name: Build U-Boot AX6000
+        run: |
+          git clone --depth=1 https://github.com/hanwckf/bl-mt798x.git
+          cd bl-mt798x
+          SOC=mt7986 BOARD=redmi_ax6000 MULTI_LAYOUT=1 ./build.sh
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Redmi_AX6000_U-Boot
+          path: bl-mt798x/output/
+
+      - name: Delete Workflow
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          keep_minimum_runs: 0
+          retain_days: 1
