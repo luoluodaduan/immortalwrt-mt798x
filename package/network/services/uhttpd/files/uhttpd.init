@@ -37,15 +37,15 @@ generate_keys() {
 	local crt="$3"
 	local days bits country state location organization commonname
 
-	config_get days       "$cfg" days
-	config_get bits       "$cfg" bits
-	config_get country    "$cfg" country
-	config_get state      "$cfg" state
-	config_get location   "$cfg" location
+	config_get days "$cfg" days
+	config_get bits "$cfg" bits
+	config_get country "$cfg" country
+	config_get state "$cfg" state
+	config_get location "$cfg" location
 	config_get organization "$cfg" organization
 	config_get commonname "$cfg" commonname
-	config_get key_type   "$cfg" key_type
-	config_get ec_curve   "$cfg" ec_curve
+	config_get key_type "$cfg" key_type
+	config_get ec_curve "$cfg" ec_curve
 
 	# Prefer px5g for certificate generation (existence evaluated last)
 	local GENKEY_CMD=""
@@ -56,8 +56,8 @@ generate_keys() {
 	[ -x "$PX5G_BIN" ] && GENKEY_CMD="$PX5G_BIN selfsigned -der"
 	[ -n "$GENKEY_CMD" ] && {
 		$GENKEY_CMD \
-			-days ${days:-730} -newkey ${KEY_OPTS} -keyout "${UHTTPD_KEY}.new" -out "${UHTTPD_CERT}.new" \
-			-subj /C="${country:-ZZ}"/ST="${state:-Somewhere}"/L="${location:-Unknown}"/O="${organization:-OpenWrt$UNIQUEID}"/CN="${commonname:-OpenWrt}"
+		-days ${days:-730} -newkey ${KEY_OPTS} -keyout "${UHTTPD_KEY}.new" -out "${UHTTPD_CERT}.new" \
+		-subj /C="${country:-ZZ}"/ST="${state:-Somewhere}"/L="${location:-Unknown}"/O="${organization:-OpenWrt$UNIQUEID}"/CN="${commonname:-OpenWrt}"
 		sync
 		mv "${UHTTPD_KEY}.new" "${UHTTPD_KEY}"
 		mv "${UHTTPD_CERT}.new" "${UHTTPD_CERT}"
@@ -91,8 +91,7 @@ append_lua_prefix() {
 	fi
 }
 
-start_instance()
-{
+start_instance() {
 	UHTTPD_CERT=""
 	UHTTPD_KEY=""
 
@@ -157,12 +156,12 @@ start_instance()
 
 	config_get alias_list "$cfg" alias
 	for alias in $alias_list; do
-		 procd_append_param command -y "$alias"
+		procd_append_param command -y "$alias"
 	done
 
 	config_get http "$cfg" listen_http
 	for listen in $http; do
-		 procd_append_param command -p "$listen"
+		procd_append_param command -p "$listen"
 	done
 
 	config_get interpreter "$cfg" interpreter
@@ -176,7 +175,7 @@ start_instance()
 	done
 
 	config_get https "$cfg" listen_https
-	config_get UHTTPD_KEY  "$cfg" key  /etc/uhttpd.key
+	config_get UHTTPD_KEY "$cfg" key /etc/uhttpd.key
 	config_get UHTTPD_CERT "$cfg" cert /etc/uhttpd.crt
 
 	[ -f /lib/libustream-ssl.so ] && [ -n "$https" ] && {
@@ -186,7 +185,7 @@ start_instance()
 
 		[ -f "$UHTTPD_CERT" -a -f "$UHTTPD_KEY" ] && {
 			append_arg "$cfg" cert "-C"
-			append_arg "$cfg" key  "-K"
+			append_arg "$cfg" key "-K"
 
 			for listen in $https; do
 				procd_append_param command -s "$listen"
@@ -203,8 +202,7 @@ start_instance()
 	procd_close_instance
 }
 
-service_triggers()
-{
+service_triggers() {
 	procd_add_reload_trigger "uhttpd"
 }
 
