@@ -1,0 +1,47 @@
+name: Build U-Boot AX6000
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free Disk Space
+        uses: FirelightFlagboy/gh-runner-free-disk-space@main
+
+      - name: Initialization environment
+        run: |
+          sudo -E apt-get -yqq update
+          sudo -E apt-get -yqq upgrade
+          sudo -E apt-get -yqq install bison build-essential device-tree-compiler flex gcc-aarch64-linux-gnu libssl-dev qemu-user-static
+          sudo -E apt-get -yqq autoremove
+          sudo -E apt-get -yqq autoclean
+          sudo -E apt-get -yqq clean
+          sudo -E systemctl daemon-reload
+
+      - name: Build U-Boot AX6000
+        run: |
+          git clone --depth=1 https://github.com/hanwckf/bl-mt798x.git
+          cd bl-mt798x
+          SOC=mt7986 BOARD=redmi_ax6000 MULTI_LAYOUT=1 ./build.sh
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Redmi_AX6000_U-Boot
+          path: bl-mt798x/output/
+
+      - name: Delete old Releases and Workflows
+        uses: ophub/delete-releases-workflows@main
+        with:
+          delete_releases: true
+          releases_keep_latest: 0
+          delete_tags: true
+          delete_workflows: true
+          workflows_keep_day: 1
+          gh_token: ${{secrets.GITHUB_TOKEN}}
