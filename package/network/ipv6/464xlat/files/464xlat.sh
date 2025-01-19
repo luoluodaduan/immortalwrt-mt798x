@@ -29,7 +29,7 @@ proto_464xlat_setup() {
 
 	[ "$zone" = "-" ] && zone=""
 
-	( proto_add_host_dependency "$cfg" "::" "$tunlink" )
+	(proto_add_host_dependency "$cfg" "::" "$tunlink")
 
 	if [ -z "$tunlink" ] && ! network_find_wan6 tunlink; then
 		proto_notify_error "$cfg" "NO_WAN_LINK"
@@ -46,7 +46,7 @@ proto_464xlat_setup() {
 	ip -6 rule del from all lookup local
 	ip -6 rule add from all lookup local pref 1
 	ip -6 rule add to $ip6addr lookup prelocal pref 0
-	echo "$ip6addr" > /tmp/464-$cfg-anycast
+	echo "$ip6addr" >/tmp/464-$cfg-anycast
 
 	proto_init_update "$link" 1
 	proto_add_ipv4_route "0.0.0.0" 0 "" "" 2048
@@ -56,26 +56,26 @@ proto_464xlat_setup() {
 	[ -n "$zone" ] && json_add_string zone "$zone"
 
 	json_add_array firewall
-		[ -z "$zone" ] && zone=$(fw3 -q network $iface 2>/dev/null)
+	[ -z "$zone" ] && zone=$(fw3 -q network $iface 2>/dev/null)
 
+	json_add_object ""
+	json_add_string type nat
+	json_add_string target SNAT
+	json_add_string family inet
+	json_add_string snat_ip 192.0.0.1
+	json_close_object
+	[ -n "$zone" ] && {
 		json_add_object ""
-			json_add_string type nat
-			json_add_string target SNAT
-			json_add_string family inet
-			json_add_string snat_ip 192.0.0.1
+		json_add_string type rule
+		json_add_string family inet6
+		json_add_string proto all
+		json_add_string direction in
+		json_add_string dest "$zone"
+		json_add_string src "$zone"
+		json_add_string src_ip $ip6addr
+		json_add_string target ACCEPT
 		json_close_object
-		[ -n "$zone" ] && {
-			json_add_object ""
-				json_add_string type rule
-				json_add_string family inet6
-				json_add_string proto all
-				json_add_string direction in
-				json_add_string dest "$zone"
-				json_add_string src "$zone"
-				json_add_string src_ip $ip6addr
-				json_add_string target ACCEPT
-			json_close_object
-		}
+	}
 	json_close_array
 	proto_close_data
 
@@ -98,6 +98,9 @@ proto_464xlat_teardown() {
 		ip -6 rule del from all lookup local
 		ip -6 rule add from all lookup local pref 0
 	fi
+
+	# Kill conntracks SNATed to 192.0.0.1
+	echo 192.0.0.1 >/proc/net/nf_conntrack
 }
 
 proto_464xlat_init_config() {
@@ -111,5 +114,5 @@ proto_464xlat_init_config() {
 }
 
 [ -n "$INCLUDE_ONLY" ] || {
-        add_protocol 464xlat
+	add_protocol 464xlat
 }

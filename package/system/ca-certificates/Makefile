@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2006-2017 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -7,13 +6,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ca-certificates
-PKG_VERSION:=20230311
+PKG_VERSION:=20240203
 PKG_RELEASE:=1
 PKG_MAINTAINER:=
 
+PKG_LICENSE:=GPL-2.0-or-later MPL-2.0
+PKG_LICENSE_FILES:=debian/copyright
+
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://ftp.debian.org/debian/pool/main/c/ca-certificates
-PKG_HASH:=83de934afa186e279d1ed08ea0d73f5cf43a6fbfb5f00874b6db3711c64576f3
+PKG_HASH:=3286d3fc42c4d11b7086711a85f865b44065ce05cf1fb5376b2abed07622a9c6
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -22,19 +24,19 @@ TAR_OPTIONS+= --strip-components 1
 TAR_CMD=$(HOST_TAR) -C $(1) $(TAR_OPTIONS)
 
 define Package/ca-certificates
-  SECTION:=base
-  CATEGORY:=Base system
-  TITLE:=System CA certificates
-  PKGARCH:=all
-  PROVIDES:=ca-certs
+	SECTION:=base
+	CATEGORY:=Base system
+	TITLE:=System CA certificates
+	PKGARCH:=all
+	PROVIDES:=ca-certs
 endef
 
 define Package/ca-bundle
-  SECTION:=base
-  CATEGORY:=Base system
-  TITLE:=System CA certificates as a bundle
-  PKGARCH:=all
-  PROVIDES:=ca-certs
+	SECTION:=base
+	CATEGORY:=Base system
+	TITLE:=System CA certificates as a bundle
+	PKGARCH:=all
+	PROVIDES:=ca-certs
 endef
 
 define Build/Install

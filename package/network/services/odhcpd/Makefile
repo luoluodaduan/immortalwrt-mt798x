@@ -12,9 +12,9 @@ PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/odhcpd.git
-PKG_SOURCE_DATE:=2021-07-18
-PKG_SOURCE_VERSION:=bc9d317f2921ae6b529f2c9f8de79b75992e206f
-PKG_MIRROR_HASH:=be96c4984821b8af95bfee1a29c082bb9eaa052cd3e03d8632ff02afd2debc81
+PKG_SOURCE_DATE:=2022-10-31
+PKG_SOURCE_VERSION:=a92c0a73d018cd6453dcf253d9617f97311becab
+PKG_MIRROR_HASH:=0752d500b4aa65290c46be89ac5c30a0d536f6695c04ee79201cbada0880ed9c
 
 PKG_MAINTAINER:=Hans Dedecker <dedeckeh@gmail.com>
 PKG_LICENSE:=GPL-2.0
@@ -34,20 +34,20 @@ define Package/odhcpd/default
 endef
 
 define Package/odhcpd/default/description
- odhcpd is a daemon for serving and relaying IP management protocols to
- configure clients and downstream routers. It tries to follow the RFC 6204
- requirements for IPv6 home routers.
+odhcpd is a daemon for serving and relaying IP management protocols to
+configure clients and downstream routers. It tries to follow the RFC 6204
+requirements for IPv6 home routers.
 endef
 
 define Package/odhcpd/default/config
-menu "Configuration"
+	menu "Configuration"
 	depends on PACKAGE_$(1)
 
-config PACKAGE_odhcpd_$(2)_ext_cer_id
+	config PACKAGE_odhcpd_$(2)_ext_cer_id
 	int
 	default 0
 	prompt "CER-ID Extension ID (0 = disabled)"
-endmenu
+	endmenu
 endef
 
 define Package/odhcpd
@@ -59,12 +59,10 @@ endef
 Package/odhcpd/config=$(call Package/odhcpd/default/config,odhcpd,full)
 
 define Package/odhcpd/description
- $(call Package/odhcpd/default/description)
-
- This is a variant providing server services for DHCPv4, RA, stateless and
- stateful DHCPv6,  prefix delegation and can be used to relay RA, DHCPv6 and
- NDP between routed (non-bridged) interfaces in case no delegated prefixes
- are available.
+$(call Package/odhcpd/default/description)
+This is a variant providing server services for DHCPv4, RA, stateless and
+stateful DHCPv6,  prefix delegation and can be used to relay RA, DHCPv6 and
+NDP between routed (non-bridged) interfaces in case no delegated prefixes are available.
 endef
 
 define Package/odhcpd-ipv6only
@@ -76,11 +74,10 @@ endef
 Package/odhcpd-ipv6only/config=$(call Package/odhcpd/default/config,odhcpd-ipv6only,ipv6only)
 
 define Package/odhcpd-ipv6only/description
- $(call Package/odhcpd/default/description)
-
- This is a variant providing server services for RA, stateless and stateful
- DHCPv6,  prefix delegation and can be used to relay RA, DHCPv6 and NDP between
- routed (non-bridged) interfaces in case no delegated prefixes are available.
+$(call Package/odhcpd/default/description)
+This is a variant providing server services for RA, stateless and stateful
+DHCPv6,  prefix delegation and can be used to relay RA, DHCPv6 and NDP between
+routed (non-bridged) interfaces in case no delegated prefixes are available.
 endef
 
 CMAKE_OPTIONS += -DUBUS=1

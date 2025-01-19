@@ -45,11 +45,9 @@ enable() {
 	err=1
 	name="$(basename "${initscript}")"
 	[ "$START" ] && \
-		ln -sf "../init.d/$name" "$IPKG_INSTROOT/etc/rc.d/S${START}${name##S[0-9][0-9]}" && \
-		err=0
+	ln -sf "../init.d/$name" "$IPKG_INSTROOT/etc/rc.d/S${START}${name##S[0-9][0-9]}" && err=0
 	[ "$STOP" ] && \
-		ln -sf "../init.d/$name" "$IPKG_INSTROOT/etc/rc.d/K${STOP}${name##K[0-9][0-9]}" && \
-		err=0
+	ln -sf "../init.d/$name" "$IPKG_INSTROOT/etc/rc.d/K${STOP}${name##K[0-9][0-9]}" && err=0
 	return $err
 }
 

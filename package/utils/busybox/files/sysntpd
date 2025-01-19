@@ -30,12 +30,12 @@ get_dhcp_ntp_servers() {
 
 validate_ntp_section() {
 	uci_load_validate system timeserver "$1" "$2" \
-		'dhcp_interface:list(string)' \
-		'enable_server:bool:0' \
-		'enabled:bool:1' \
-		'interface:string' \
-		'server:list(host)' \
-		'use_dhcp:bool:1'
+	'dhcp_interface:list(string)' \
+	'enable_server:bool:0' \
+	'enabled:bool:1' \
+	'interface:string' \
+	'server:list(host)' \
+	'use_dhcp:bool:1'
 }
 
 start_ntpd_instance() {
@@ -60,7 +60,7 @@ start_ntpd_instance() {
 			local ifname
 
 			network_get_device ifname "$interface" || \
-				ifname="$interface"
+			ifname="$interface"
 			procd_append_param command -I "$ifname"
 			procd_append_param netdev "$ifname"
 		}
@@ -121,9 +121,9 @@ service_triggers() {
 		local ifname
 
 		network_get_device ifname "$interface" || \
-			ifname="$interface"
+		ifname="$interface"
 		procd_add_interface_trigger "interface.*" "$ifname" \
-			/etc/init.d/"$name" reload
+		/etc/init.d/"$name" reload
 	}
 
 	procd_add_validation validate_ntp_section

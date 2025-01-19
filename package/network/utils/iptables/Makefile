@@ -22,7 +22,7 @@ PKG_FLAGS:=nonshared
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 PKG_LICENSE:=GPL-2.0
-PKG_CPE_ID:=cpe:/a:netfilter_core_team:iptables
+PKG_CPE_ID:=cpe:/a:netfilter:iptables
 
 include $(INCLUDE_DIR)/package.mk
 ifeq ($(DUMP),)
@@ -30,7 +30,6 @@ ifeq ($(DUMP),)
   include $(INCLUDE_DIR)/netfilter.mk
   STAMP_CONFIGURED:=$(strip $(STAMP_CONFIGURED))_$(shell grep 'NETFILTER' $(LINUX_DIR)/.config | mkhash md5)
 endif
-
 
 define Package/iptables/Default
   SECTION:=net
@@ -248,7 +247,6 @@ define Package/iptables-mod-trace/description
 
 endef
 
-
 define Package/iptables-mod-nfqueue
 $(call Package/iptables/Module, +kmod-nfnetlink-queue +kmod-ipt-nfqueue)
   TITLE:=Netfilter NFQUEUE target
@@ -447,11 +445,11 @@ endef
 
 define Package/ip6tables-nft/description
 Extra ip6tables nftables nft binaries.
-  iptables-nft
-  iptables-nft-restore
-  iptables-nft-save
-  iptables-translate
-  iptables-restore-translate
+  ip6tables-nft
+  ip6tables-nft-restore
+  ip6tables-nft-save
+  ip6tables-translate
+  ip6tables-restore-translate
 endef
 
 define Package/ip6tables-extra
@@ -460,7 +458,7 @@ $(call Package/iptables/Default)
   TITLE:=IPv6 header matching modules
 endef
 
-define Package/ip6tables-mod-extra/description
+define Package/ip6tables-extra/description
 iptables header matching modules for IPv6
 endef
 
@@ -675,4 +673,3 @@ $(eval $(call BuildPackage,ip6tables))
 $(eval $(call BuildPackage,ip6tables-nft))
 $(eval $(call BuildPlugin,ip6tables-extra,$(IPT_IPV6_EXTRA-m)))
 $(eval $(call BuildPlugin,ip6tables-mod-nat,$(IPT_NAT6-m)))
-

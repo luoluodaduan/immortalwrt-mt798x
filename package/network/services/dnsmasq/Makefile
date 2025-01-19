@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2006-2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -8,13 +7,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dnsmasq
-PKG_UPSTREAM_VERSION:=2.85
+PKG_UPSTREAM_VERSION:=2.89
 PKG_VERSION:=$(subst test,~~test,$(subst rc,~rc,$(PKG_UPSTREAM_VERSION)))
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_UPSTREAM_VERSION).tar.xz
-PKG_SOURCE_URL:=http://thekelleys.org.uk/dnsmasq
-PKG_HASH:=ad98d3803df687e5b938080f3d25c628fe41c878752d03fbc6199787fee312fa
+PKG_SOURCE_URL:=https://thekelleys.org.uk/dnsmasq/
+PKG_HASH:=02bd230346cf0b9d5909f5e151df168b2707103785eb616b56685855adebb609
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYING
@@ -70,18 +69,16 @@ $(call Package/dnsmasq/Default)
 endef
 
 define Package/dnsmasq/description
-  It is intended to provide coupled DNS and DHCP service to a LAN.
+It is intended to provide coupled DNS and DHCP service to a LAN.
 endef
 
 define Package/dnsmasq-dhcpv6/description
 $(call Package/dnsmasq/description)
-
 This is a variant with DHCPv6 support
 endef
 
 define Package/dnsmasq-full/description
 $(call Package/dnsmasq/description)
-
 This is a fully configurable variant with DHCPv4, DHCPv6, DNSSEC, Authoritative DNS
 and IPset, Conntrack support & NO_ID enabled by default.
 endef
