@@ -19,7 +19,7 @@ BASEDHCPSTAMPFILE="/var/run/dnsmasq"
 DHCPBOGUSHOSTNAMEFILE="/usr/share/dnsmasq/dhcpbogushostname.conf"
 RFC6761FILE="/usr/share/dnsmasq/rfc6761.conf"
 DHCPSCRIPT="/usr/lib/dnsmasq/dhcp-script.sh"
-DHCPSCRIPT_DEPENDS="/usr/share/libubox/jshn.sh /usr/bin/jshn /bin/ubus"
+DHCPSCRIPT_DEPENDS="/usr/share/libubox/jshn.sh /usr/bin/jshn /bin/ubus /usr/bin/env"
 
 DNSMASQ_DHCP_VER=4
 
@@ -66,7 +66,7 @@ xappend() {
 	local opt="${value%%=*}"
 
 	if ! dnsmasq_ignore_opt "$opt"; then
-		echo "$value" >>$CONFIGFILE_TMP
+		echo "$value" >>"$CONFIGFILE_TMP"
 	fi
 }
 
@@ -347,7 +347,7 @@ dhcp_host_add() {
 
 	config_get_bool dns "$cfg" dns 0
 	[ "$dns" = "1" ] && [ -n "$ip" ] && [ -n "$name" ] && {
-		echo "$ip $name${DOMAIN:+.$DOMAIN}" >>$HOSTFILE_TMP
+		echo "$ip $name${DOMAIN:+.$DOMAIN}" >>"$HOSTFILE_TMP"
 	}
 
 	config_get mac "$cfg" mac
@@ -555,6 +555,7 @@ dhcp_add() {
 	config_get ra_management "$cfg" ra_management
 	config_get ra_preference "$cfg" ra_preference
 	config_get dns "$cfg" dns
+	config_get dns_sl "$cfg" domain
 
 	config_list_foreach "$cfg" "interface_name" append_interface_name "$ifname"
 
@@ -635,6 +636,12 @@ dhcp_add() {
 		fi
 
 		dhcp_option_append "option6:dns-server,$dnss" "$networkid"
+
+		if [ -n "$dns_sl" ]; then
+			ddssl=""
+			for dd in $dns_sl; do append ddssl "$dd" ","; done
+		fi
+		dhcp_option_append "option6:domain-search,$ddssl" "$networkid"
 	fi
 
 	dhcp_option_add "$cfg" "$networkid" 0
@@ -690,7 +697,7 @@ dhcp_domain_add() {
 		record="${record:+$record }$name"
 	done
 
-	echo "$ip $record" >>$HOSTFILE_TMP
+	echo "$ip $record" >>"$HOSTFILE_TMP"
 }
 
 dhcp_srv_add() {
@@ -828,13 +835,13 @@ dnsmasq_start() {
 	# before we can call xappend
 	umask u=rwx,g=rx,o=rx
 	mkdir -p /var/run/dnsmasq/
-	mkdir -p $(dirname $CONFIGFILE)
+	mkdir -p "$(dirname "$CONFIGFILE")"
 	mkdir -p "$HOSTFILE_DIR"
 	mkdir -p /var/lib/misc
 	chown dnsmasq:dnsmasq /var/run/dnsmasq
 
-	echo "# auto-generated config file from /etc/config/dhcp" >$CONFIGFILE_TMP
-	echo "# auto-generated config file from /etc/config/dhcp" >$HOSTFILE_TMP
+	echo "# auto-generated config file from /etc/config/dhcp" >"$CONFIGFILE_TMP"
+	echo "# auto-generated config file from /etc/config/dhcp" >"$HOSTFILE_TMP"
 
 	local dnsmasqconffile="/etc/dnsmasq.${cfg}.conf"
 	if [ ! -r "$dnsmasqconffile" ]; then
@@ -1059,7 +1066,7 @@ dnsmasq_start() {
 	[ ! -d "$dnsmasqconfdir" ] && mkdir -p $dnsmasqconfdir
 	xappend "--user=dnsmasq"
 	xappend "--group=dnsmasq"
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 
 	config_get_bool enable_tftp "$cfg" enable_tftp 0
 	[ "$enable_tftp" -gt 0 ] && {
@@ -1068,7 +1075,7 @@ dnsmasq_start() {
 	}
 
 	config_foreach filter_dnsmasq host dhcp_host_add "$cfg"
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 
 	config_get_bool dhcpbogushostname "$cfg" dhcpbogushostname 1
 	[ "$dhcpbogushostname" -gt 0 ] && {
@@ -1089,10 +1096,10 @@ dnsmasq_start() {
 	config_foreach filter_dnsmasq hostrecord dhcp_hostrecord_add "$cfg"
 	[ -n "$BOOT" ] || config_foreach filter_dnsmasq relay dhcp_relay_add "$cfg"
 
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 	config_foreach filter_dnsmasq srvhost dhcp_srv_add "$cfg"
 	config_foreach filter_dnsmasq mxhost dhcp_mx_add "$cfg"
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 
 	config_get_bool boguspriv "$cfg" boguspriv 1
 	[ "$boguspriv" -gt 0 ] && {
@@ -1113,16 +1120,16 @@ dnsmasq_start() {
 		[ -n "$BOOT" ] || config_foreach filter_dnsmasq dhcp dhcp_add "$cfg"
 	fi
 
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 	config_foreach filter_dnsmasq cname dhcp_cname_add "$cfg"
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 	config_foreach filter_dnsmasq ipset dnsmasq_ipset_add "$cfg"
-	echo >>$CONFIGFILE_TMP
+	echo >>"$CONFIGFILE_TMP"
 
-	mv -f $CONFIGFILE_TMP $CONFIGFILE
-	mv -f $HOSTFILE_TMP $HOSTFILE
+	mv -f "$CONFIGFILE_TMP" "$CONFIGFILE"
+	mv -f "$HOSTFILE_TMP" "$HOSTFILE"
 
 	[ "$localuse" -gt 0 ] && {
 		rm -f /tmp/resolv.conf

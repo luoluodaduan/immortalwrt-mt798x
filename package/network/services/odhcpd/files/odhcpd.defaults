@@ -1,4 +1,5 @@
 #!/bin/sh
+
 uci -q get dhcp.odhcpd && exit 0
 touch /etc/config/dhcp
 
@@ -21,12 +22,11 @@ case "$protocol" in
 # only enable server mode on statically addressed lan ports
 "static")
 	V4MODE=server
-	[ -e /proc/sys/net/ipv6 ] && V6MODE=server
 	;;
 esac
 
 uci get dhcp.lan 1>/dev/null 2>/dev/null || {
-uci batch <<EOF
+	uci batch <<EOF
 set dhcp.lan=dhcp
 set dhcp.lan.interface='lan'
 set dhcp.lan.start='100'
@@ -46,7 +46,8 @@ set dhcp.lan.dhcpv4=$V4MODE
 set dhcp.lan.dhcpv6=$V6MODE
 set dhcp.lan.ra=$V6MODE
 set dhcp.lan.ra_slaac=1
-add_list dhcp.lan.ra_flags=managed-config
 add_list dhcp.lan.ra_flags=other-config
+set dhcp.lan.max_preferred_lifetime=2700
+set dhcp.lan.max_valid_lifetime=5400
 commit dhcp
 EOF

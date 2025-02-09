@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2013-2015 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -8,18 +7,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=odhcpd
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/odhcpd.git
-PKG_SOURCE_DATE:=2022-10-31
-PKG_SOURCE_VERSION:=a92c0a73d018cd6453dcf253d9617f97311becab
-PKG_MIRROR_HASH:=0752d500b4aa65290c46be89ac5c30a0d536f6695c04ee79201cbada0880ed9c
+PKG_MIRROR_HASH:=9936331b64880260cf969cc5656e1e1a8b7dc0e0843d64621242c500a330b4d6
+PKG_SOURCE_DATE:=2023-10-24
+PKG_SOURCE_VERSION:=d8118f6e76e5519881f9a37137c3a06b3cb60fd2
 
 PKG_MAINTAINER:=Hans Dedecker <dedeckeh@gmail.com>
 PKG_LICENSE:=GPL-2.0
 
-PKG_INSTALL:=1
 PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_odhcpd_$(BUILD_VARIANT)_ext_cer_id
 PKG_ASLR_PIE_REGULAR:=1
 
@@ -40,14 +38,14 @@ requirements for IPv6 home routers.
 endef
 
 define Package/odhcpd/default/config
-	menu "Configuration"
+menu "Configuration"
 	depends on PACKAGE_$(1)
 
-	config PACKAGE_odhcpd_$(2)_ext_cer_id
+config PACKAGE_odhcpd_$(2)_ext_cer_id
 	int
 	default 0
 	prompt "CER-ID Extension ID (0 = disabled)"
-	endmenu
+endmenu
 endef
 
 define Package/odhcpd
@@ -61,7 +59,7 @@ Package/odhcpd/config=$(call Package/odhcpd/default/config,odhcpd,full)
 define Package/odhcpd/description
 $(call Package/odhcpd/default/description)
 This is a variant providing server services for DHCPv4, RA, stateless and
-stateful DHCPv6,  prefix delegation and can be used to relay RA, DHCPv6 and
+stateful DHCPv6, prefix delegation and can be used to relay RA, DHCPv6 and
 NDP between routed (non-bridged) interfaces in case no delegated prefixes are available.
 endef
 
@@ -76,7 +74,7 @@ Package/odhcpd-ipv6only/config=$(call Package/odhcpd/default/config,odhcpd-ipv6o
 define Package/odhcpd-ipv6only/description
 $(call Package/odhcpd/default/description)
 This is a variant providing server services for RA, stateless and stateful
-DHCPv6,  prefix delegation and can be used to relay RA, DHCPv6 and NDP between
+DHCPv6, prefix delegation and can be used to relay RA, DHCPv6 and NDP between
 routed (non-bridged) interfaces in case no delegated prefixes are available.
 endef
 

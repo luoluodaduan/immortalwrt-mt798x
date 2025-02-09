@@ -17,13 +17,11 @@ main() {
 	fi
 
 	echo "Usage: $(basename "$0") <service> [command]"
-	for service in /etc/init.d/* ; do
-		boot="$($service enabled && echo "enabled" || echo "disabled" )"
-		status="$( [ "$(ubus call service list "{ 'verbose': true, 'name': '$(basename "$service")' }" \
-			| jsonfilter -q -e "@['$(basename "$service")'].instances[*].running" | uniq)" = "true" ] \
-			&& echo "running" || echo "stopped" )"
+	for service in /etc/init.d/*; do
+		boot="$($service enabled && echo "enabled" || echo "disabled")"
+		status="$([ "$(ubus call service list "{ 'verbose': true, 'name': '$(basename "$service")' }" | jsonfilter -q -e "@['$(basename "$service")'].instances[*].running" | uniq)" = "true" ] && echo "running" || echo "stopped")"
 
-		printf "%-30s\\t%10s\\t%10s\\n"  "$service" "$boot" "$status"
+		printf "%-30s\\t%10s\\t%10s\\n" "$service" "$boot" "$status"
 	done
 }
 

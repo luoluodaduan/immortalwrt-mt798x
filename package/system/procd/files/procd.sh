@@ -1,44 +1,43 @@
 # procd API:
 #
 # procd_open_service(name, [script]):
-#   Initialize a new procd command message containing a service with one or more instances
+# Initialize a new procd command message containing a service with one or more instances
 #
 # procd_close_service()
-#   Send the command message for the service
+# Send the command message for the service
 #
 # procd_open_instance([name]):
-#   Add an instance to the service described by the previous procd_open_service call
+# Add an instance to the service described by the previous procd_open_service call
 #
 # procd_set_param(type, [value...])
-#   Available types:
-#     command: command line (array).
-#     respawn info: array with 3 values $fail_threshold $restart_timeout $max_fail
-#     env: environment variable (passed to the process)
-#     data: arbitrary name/value pairs for detecting config changes (table)
-#     file: configuration files (array)
-#     netdev: bound network device (detects ifindex changes)
-#     limits: resource limits (passed to the process)
-#     user: $username to run service as
-#     group: $groupname to run service as
-#     pidfile: file name to write pid into
-#     stdout: boolean whether to redirect commands stdout to syslog (default: 0)
-#     stderr: boolean whether to redirect commands stderr to syslog (default: 0)
-#     facility: syslog facility used when logging to syslog (default: daemon)
+# Available types:
+# command: command line (array).
+# respawn info: array with 3 values $fail_threshold $restart_timeout $max_fail
+# env: environment variable (passed to the process)
+# data: arbitrary name/value pairs for detecting config changes (table)
+# file: configuration files (array)
+# netdev: bound network device (detects ifindex changes)
+# limits: resource limits (passed to the process)
+# user: $username to run service as
+# group: $groupname to run service as
+# pidfile: file name to write pid into
+# stdout: boolean whether to redirect commands stdout to syslog (default: 0)
+# stderr: boolean whether to redirect commands stderr to syslog (default: 0)
+# facility: syslog facility used when logging to syslog (default: daemon)
 #
-#   No space separation is done for arrays/tables - use one function argument per command line argument
+# No space separation is done for arrays/tables - use one function argument per command line argument
 #
 # procd_close_instance():
-#   Complete the instance being prepared
+# Complete the instance being prepared
 #
 # procd_running(service, [instance]):
-#   Checks if service/instance is currently running
+# Checks if service/instance is currently running
 #
 # procd_kill(service, [instance]):
-#   Kill a service instance (or all instances)
+# Kill a service instance (or all instances)
 #
 # procd_send_signal(service, [instance], [signal])
-#   Send a signal to a service instance (or all instances)
-#
+# Send a signal to a service instance (or all instances)
 
 . "$IPKG_INSTROOT/usr/share/libubox/jshn.sh"
 
@@ -49,7 +48,7 @@ procd_lock() {
 	local basescript=$(readlink "$initscript")
 	local service_name="$(basename ${basescript:-$initscript})"
 
-	flock -n 1000 &> /dev/null
+	flock -n 1000 &>/dev/null
 	if [ "$?" != "0" ]; then
 		exec 1000>"$IPKG_INSTROOT/var/lock/procd_${service_name}.lock"
 		flock 1000
@@ -139,7 +138,8 @@ _procd_add_table() {
 }
 
 _procd_open_instance() {
-	local name="$1"; shift
+	local name="$1"
+	shift
 
 	_PROCD_INSTANCE_SEQ="$(($_PROCD_INSTANCE_SEQ + 1))"
 	name="${name:-instance$_PROCD_INSTANCE_SEQ}"
@@ -186,19 +186,39 @@ _procd_add_jail() {
 	json_add_string name "$1"
 
 	shift
-	
+
 	for a in $@; do
 		case $a in
-		log)	json_add_boolean "log" "1";;
-		ubus)	json_add_boolean "ubus" "1";;
-		procfs)	json_add_boolean "procfs" "1";;
-		sysfs)	json_add_boolean "sysfs" "1";;
-		ronly)	json_add_boolean "ronly" "1";;
-		requirejail)	json_add_boolean "requirejail" "1";;
-		netns)	json_add_boolean "netns" "1";;
-		userns)	json_add_boolean "userns" "1";;
-		cgroupsns)	json_add_boolean "cgroupsns" "1";;
-		console)	json_add_boolean "console" "1";;
+		log)
+			json_add_boolean "log" "1"
+			;;
+		ubus)
+			json_add_boolean "ubus" "1"
+			;;
+		procfs)
+			json_add_boolean "procfs" "1"
+			;;
+		sysfs)
+			json_add_boolean "sysfs" "1"
+			;;
+		ronly)
+			json_add_boolean "ronly" "1"
+			;;
+		requirejail)
+			json_add_boolean "requirejail" "1"
+			;;
+		netns)
+			json_add_boolean "netns" "1"
+			;;
+		userns)
+			json_add_boolean "userns" "1"
+			;;
+		cgroupsns)
+			json_add_boolean "cgroupsns" "1"
+			;;
+		console)
+			json_add_boolean "console" "1"
+			;;
 		esac
 	done
 	json_add_object "mount"
@@ -241,32 +261,32 @@ _procd_add_jail_mount_rw() {
 }
 
 _procd_set_param() {
-	local type="$1"; shift
+	local type="$1"
+	shift
 
 	case "$type" in
-		env|data|limits)
-			_procd_add_table "$type" "$@"
+	env | data | limits)
+		_procd_add_table "$type" "$@"
 		;;
-		command|netdev|file|respawn|watch|watchdog)
-			_procd_add_array "$type" "$@"
+	command | netdev | file | respawn | watch | watchdog)
+		_procd_add_array "$type" "$@"
 		;;
-		error)
-			json_add_array "$type"
-			json_add_string "" "$@"
-			json_close_array
+	error)
+		json_add_array "$type"
+		json_add_string "" "$@"
+		json_close_array
 		;;
-		nice|term_timeout)
-			json_add_int "$type" "$1"
+	nice | term_timeout)
+		json_add_int "$type" "$1"
 		;;
-		reload_signal)
-			json_add_int "$type" $(kill -l "$1")
+	reload_signal)
+		json_add_int "$type" $(kill -l "$1")
 		;;
-		pidfile|user|group|seccomp|capabilities|facility|\
-		extroot|overlaydir|tmpoverlaysize)
-			json_add_string "$type" "$1"
+	pidfile | user | group | seccomp | capabilities | facility | extroot | overlaydir | tmpoverlaysize)
+		json_add_string "$type" "$1"
 		;;
-		stdout|stderr|no_new_privs)
-			json_add_boolean "$type" "$1"
+	stdout | stderr | no_new_privs)
+		json_add_boolean "$type" "$1"
 		;;
 	esac
 }
@@ -366,7 +386,8 @@ _procd_add_validation() {
 }
 
 _procd_append_param() {
-	local type="$1"; shift
+	local type="$1"
+	shift
 	local _json_no_warning=1
 
 	json_select "$type"
@@ -375,14 +396,14 @@ _procd_append_param() {
 		return
 	}
 	case "$type" in
-		env|data|limits)
-			_procd_add_table_data "$@"
+	env | data | limits)
+		_procd_add_table_data "$@"
 		;;
-		command|netdev|file|respawn|watch|watchdog)
-			_procd_add_array_data "$@"
+	command | netdev | file | respawn | watch | watchdog)
+		_procd_add_array_data "$@"
 		;;
-		error)
-			json_add_string "" "$@"
+	error)
+		json_add_string "" "$@"
 		;;
 	esac
 	json_select ..
@@ -391,7 +412,7 @@ _procd_append_param() {
 _procd_close_instance() {
 	local respawn_vals
 	_json_no_warning=1
-	if json_select respawn ; then
+	if json_select respawn; then
 		json_get_values respawn_vals
 		if [ -z "$respawn_vals" ]; then
 			local respawn_threshold=$(uci_get system.@service[0].respawn_threshold)
@@ -439,7 +460,7 @@ _procd_send_signal() {
 	local signal="$3"
 
 	case "$signal" in
-		[A-Z]*)	signal="$(kill -l "$signal" 2>/dev/null)" || return 1;;
+	[A-Z]*) signal="$(kill -l "$signal" 2>/dev/null)" || return 1 ;;
 	esac
 
 	json_init
@@ -458,19 +479,27 @@ _procd_status() {
 	[ -n "$service" ] && json_add_string name "$service"
 
 	data=$(_procd_ubus_call list | jsonfilter -e '@["'"$service"'"]')
-	[ -z "$data" ] && { echo "inactive"; return 3; }
+	[ -z "$data" ] && {
+		echo "inactive"
+		return 3
+	}
 
 	data=$(echo "$data" | jsonfilter -e '$.instances')
 	if [ -z "$data" ]; then
-		[ -z "$instance" ] && { echo "active with no instances"; return 0; }
+		[ -z "$instance" ] && {
+			echo "active with no instances"
+			return 0
+		}
 		data="[]"
 	fi
 
 	[ -n "$instance" ] && instance="\"$instance\"" || instance='*'
 	if [ -z "$(echo "$data" | jsonfilter -e '$['"$instance"']')" ]; then
-		echo "unknown instance $instance"; return 4
+		echo "unknown instance $instance"
+		return 4
 	else
-		echo "running"; return 0
+		echo "running"
+		return 0
 	fi
 }
 
@@ -499,9 +528,12 @@ _procd_set_config_changed() {
 
 procd_add_mdns_service() {
 	local service proto port
-	service=$1; shift
-	proto=$1; shift
-	port=$1; shift
+	service=$1
+	shift
+	proto=$1
+	shift
+	port=$1
+	shift
 	json_add_object "${service}_$port"
 	json_add_string "service" "_$service._$proto.local"
 	json_add_int port "$port"
@@ -521,18 +553,19 @@ procd_add_mdns() {
 	procd_close_data
 }
 
-uci_validate_section()
-{
+uci_validate_section() {
 	local _package="$1"
 	local _type="$2"
 	local _name="$3"
 	local _result
 	local _error
-	shift; shift; shift
-	_result=$(/sbin/validate_data "$_package" "$_type" "$_name" "$@" 2> /dev/null)
+	shift
+	shift
+	shift
+	_result=$(/sbin/validate_data "$_package" "$_type" "$_name" "$@" 2>/dev/null)
 	_error=$?
 	eval "$_result"
-	[ "$_error" = "0" ] || $(/sbin/validate_data "$_package" "$_type" "$_name" "$@" 1> /dev/null)
+	[ "$_error" = "0" ] || $(/sbin/validate_data "$_package" "$_type" "$_name" "$@" 1>/dev/null)
 	return $_error
 }
 
@@ -543,7 +576,10 @@ uci_load_validate() {
 	local _function="$4"
 	local _option
 	local _result
-	shift; shift; shift; shift
+	shift
+	shift
+	shift
+	shift
 	for _option in "$@"; do
 		eval "local ${_option%%:*}"
 	done
@@ -554,26 +590,26 @@ uci_load_validate() {
 }
 
 _procd_wrapper \
-	procd_open_service \
-	procd_close_service \
-	procd_add_instance \
-	procd_add_raw_trigger \
-	procd_add_config_trigger \
-	procd_add_interface_trigger \
-	procd_add_reload_trigger \
-	procd_add_reload_interface_trigger \
-	procd_open_trigger \
-	procd_close_trigger \
-	procd_open_instance \
-	procd_close_instance \
-	procd_open_validate \
-	procd_close_validate \
-	procd_add_jail \
-	procd_add_jail_mount \
-	procd_add_jail_mount_rw \
-	procd_set_param \
-	procd_append_param \
-	procd_add_validation \
-	procd_set_config_changed \
-	procd_kill \
-	procd_send_signal
+procd_open_service \
+procd_close_service \
+procd_add_instance \
+procd_add_raw_trigger \
+procd_add_config_trigger \
+procd_add_interface_trigger \
+procd_add_reload_trigger \
+procd_add_reload_interface_trigger \
+procd_open_trigger \
+procd_close_trigger \
+procd_open_instance \
+procd_close_instance \
+procd_open_validate \
+procd_close_validate \
+procd_add_jail \
+procd_add_jail_mount \
+procd_add_jail_mount_rw \
+procd_set_param \
+procd_append_param \
+procd_add_validation \
+procd_set_config_changed \
+procd_kill \
+procd_send_signal

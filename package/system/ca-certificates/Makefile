@@ -2,7 +2,7 @@
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
-#
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ca-certificates
@@ -41,8 +41,8 @@ endef
 
 define Build/Install
 	mkdir -p \
-		$(PKG_INSTALL_DIR)/usr/sbin \
-		$(PKG_INSTALL_DIR)/usr/share/ca-certificates
+	$(PKG_INSTALL_DIR)/usr/sbin \
+	$(PKG_INSTALL_DIR)/usr/share/ca-certificates
 	$(call Build/Install/Default,)
 endef
 
@@ -54,7 +54,7 @@ define Package/ca-certificates/install
 		HASH=`openssl x509 -hash -noout -in $(1)/etc/ssl/certs/$$$$CERTFILE` ; \
 		SUFFIX=0 ; \
 		while [ -h "$(1)/etc/ssl/certs/$$$$HASH.$$$$SUFFIX" ]; do \
-			let "SUFFIX += 1" ; \
+		let "SUFFIX += 1" ; \
 		done ; \
 		$(LN) "$$$$CERTFILE" "$(1)/etc/ssl/certs/$$$$HASH.$$$$SUFFIX" ; \
 	done
@@ -65,5 +65,6 @@ define Package/ca-bundle/install
 	cat $(PKG_INSTALL_DIR)/usr/share/ca-certificates/*/*.crt >$(1)/etc/ssl/certs/ca-certificates.crt
 	$(LN) /etc/ssl/certs/ca-certificates.crt $(1)/etc/ssl/cert.pem
 endef
+
 $(eval $(call BuildPackage,ca-bundle))
 $(eval $(call BuildPackage,ca-certificates))

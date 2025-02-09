@@ -1,12 +1,7 @@
-# The bandwidth unit is Mbit/s
-config eqos 'config'
-	option enabled      0
-	option download     100
-	option upload       20
 
-# Limiting the bandwidth of a single Device
-#config device
-#	option ip       "192.168.1.100"
-#	option download 10
-#	option upload   5
-#	option comment  1
+config eqos 'config'
+	option enabled '0'
+	option ipv6enabled '1'
+	option upload '60'
+	option download '120'
+
