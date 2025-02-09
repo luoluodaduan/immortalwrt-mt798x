@@ -38,6 +38,7 @@
 #
 # procd_send_signal(service, [instance], [signal])
 # Send a signal to a service instance (or all instances)
+#
 
 . "$IPKG_INSTROOT/usr/share/libubox/jshn.sh"
 
