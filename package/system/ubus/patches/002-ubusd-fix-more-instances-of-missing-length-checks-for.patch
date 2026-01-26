@@ -1,0 +1,73 @@
+--- a/ubusd_acl.c
++++ b/ubusd_acl.c
+@@ -247,6 +247,9 @@
+ 	char *k;
+ 	bool partial = false;
+ 
++	if (!len)
++		return NULL;
++
+ 	if (obj[len - 1] == '*') {
+ 		partial = true;
+ 		len--;
+@@ -277,6 +280,8 @@
+ 		return;
+ 
+ 	o = ubusd_acl_alloc_obj(file, blobmsg_name(obj));
++	if (!o)
++		return;
+ 
+ 	o->methods = tb[ACL_ACCESS_METHODS];
+ 	o->tags = tb[ACL_ACCESS_TAGS];
+@@ -291,6 +296,9 @@
+ {
+ 	struct ubusd_acl_obj *o = ubusd_acl_alloc_obj(file, obj);
+ 
++	if (!o)
++		return;
++
+ 	o->subscribe = true;
+ }
+ 
+@@ -299,6 +307,9 @@
+ {
+ 	struct ubusd_acl_obj *o = ubusd_acl_alloc_obj(file, obj);
+ 
++	if (!o)
++		return;
++
+ 	o->publish = true;
+ }
+ 
+@@ -306,6 +317,9 @@
+ {
+ 	struct ubusd_acl_obj *o = ubusd_acl_alloc_obj(file, obj);
+ 
++	if (!o)
++		return;
++
+ 	o->listen = true;
+ }
+ 
+@@ -313,6 +327,9 @@
+ {
+ 	struct ubusd_acl_obj *o = ubusd_acl_alloc_obj(file, obj);
+ 
++	if (!o)
++		return;
++
+ 	o->send = true;
+ }
+ 
+--- a/ubusd_proto.c
++++ b/ubusd_proto.c
+@@ -241,6 +241,9 @@
+ 
+ 	objpath = blob_data(attr[UBUS_ATTR_OBJPATH]);
+ 	len = strlen(objpath);
++	if (!len)
++		return UBUS_STATUS_INVALID_ARGUMENT;
++
+ 	if (objpath[len - 1] != '*') {
+ 		obj = avl_find_element(&path, objpath, obj, path);
+ 		if (!obj)

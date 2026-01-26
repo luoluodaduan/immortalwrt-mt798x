@@ -1,0 +1,11 @@
+--- a/ubusd_event.c
++++ b/ubusd_event.c
+@@ -93,7 +93,7 @@
+ 		len--;
+ 	}
+ 
+-	if (pattern[0] && ubusd_acl_check(cl, pattern, NULL, UBUS_ACL_LISTEN))
++	if (ubusd_acl_check(cl, pattern, NULL, UBUS_ACL_LISTEN))
+ 		return UBUS_STATUS_PERMISSION_DENIED;
+ 
+ 	ev = calloc(1, sizeof(*ev) + len + 1);

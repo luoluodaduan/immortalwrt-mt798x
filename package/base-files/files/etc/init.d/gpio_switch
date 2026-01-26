@@ -5,9 +5,7 @@ START=94
 STOP=10
 USE_PROCD=1
 
-
-load_gpio_switch()
-{
+load_gpio_switch() {
 	local name
 	local gpio_pin
 	local value
@@ -52,13 +50,11 @@ load_gpio_switch()
 	fi
 }
 
-service_triggers()
-{
+service_triggers() {
 	procd_add_reload_trigger "system"
 }
 
-start_service()
-{
+start_service() {
 	[ -e /sys/class/gpio/ ] && {
 		config_load system
 		config_foreach load_gpio_switch gpio_switch

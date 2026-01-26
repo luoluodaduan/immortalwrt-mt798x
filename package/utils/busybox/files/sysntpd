@@ -59,8 +59,7 @@ start_ntpd_instance() {
 		[ -n "$interface" ] && {
 			local ifname
 
-			network_get_device ifname "$interface" || \
-				ifname="$interface"
+			network_get_device ifname "$interface" || ifname="$interface"
 			procd_append_param command -I "$ifname"
 			procd_append_param netdev "$ifname"
 		}
@@ -120,10 +119,8 @@ service_triggers() {
 	[ $enable_server -eq 1 ] && [ -n "$interface" ] && {
 		local ifname
 
-		network_get_device ifname "$interface" || \
-			ifname="$interface"
-		procd_add_interface_trigger "interface.*" "$ifname" \
-			/etc/init.d/"$name" reload
+		network_get_device ifname "$interface" || ifname="$interface"
+		procd_add_interface_trigger "interface.*" "$ifname" /etc/init.d/"$name" reload
 	}
 
 	procd_add_validation validate_ntp_section

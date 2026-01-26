@@ -1,34 +1,41 @@
-index 85a3750..9fac9b1 100644
 --- a/defaults.c
 +++ b/defaults.c
-@@ -46,7 +46,9 @@ const struct fw3_option fw3_flag_opts[] = {
- 	FW3_OPT("synflood_protect",    bool,     defaults, syn_flood),
+@@ -49,6 +49,8 @@
  	FW3_OPT("synflood_rate",       limit,    defaults, syn_flood_rate),
  	FW3_OPT("synflood_burst",      int,      defaults, syn_flood_rate.burst),
--
-+	
-+	FW3_OPT("fullcone",           bool,     defaults, fullcone),
-+	
+ 
++	FW3_OPT("fullcone",            int,      defaults, fullcone),
++
  	FW3_OPT("tcp_syncookies",      bool,     defaults, tcp_syncookies),
  	FW3_OPT("tcp_ecn",             int,      defaults, tcp_ecn),
  	FW3_OPT("tcp_window_scaling",  bool,     defaults, tcp_window_scaling),
-diff --git a/options.h b/options.h
-index 6edd174..c02eb97 100644
 --- a/options.h
 +++ b/options.h
-@@ -267,6 +267,7 @@ struct fw3_defaults
- 	bool drop_invalid;
+@@ -98,6 +98,13 @@
+ 	__FW3_REJECT_CODE_MAX
+ };
+ 
++enum fullcone_code
++{
++	FULLCONE_DISABLED = 0,
++	FULLCONE_CHION = 1,
++	FULLCONE_BCM = 2,
++};
++
+ extern const char *fw3_flag_names[__FW3_FLAG_MAX];
+ 
+ 
+@@ -297,6 +304,7 @@
+ 	enum fw3_reject_code any_reject_code;
  
  	bool syn_flood;
-+	bool fullcone;
++	int fullcone;
  	struct fw3_limit syn_flood_rate;
  
  	bool tcp_syncookies;
-diff --git a/zones.c b/zones.c
-index 2aa7473..57eead0 100644
 --- a/zones.c
 +++ b/zones.c
-@@ -627,6 +627,7 @@ print_zone_rule(struct fw3_ipt_handle *h
+@@ -670,6 +670,7 @@
  	struct fw3_address *msrc;
  	struct fw3_address *mdest;
  	struct fw3_ipt_rule *r;
@@ -36,14 +43,15 @@ index 2aa7473..57eead0 100644
  
  	if (!fw3_is_family(zone, handle->family))
  		return;
-@@ -712,8 +713,22 @@ print_zone_rule(struct fw3_ipt_handle *h
+@@ -755,8 +756,29 @@
  				{
  					r = fw3_ipt_rule_new(handle);
  					fw3_ipt_rule_src_dest(r, msrc, mdest);
 -					fw3_ipt_rule_target(r, "MASQUERADE");
 -					fw3_ipt_rule_append(r, "zone_%s_postrouting", zone->name);
++
 +					/*FIXME: Workaround for FULLCONE-NAT*/
-+					if(defs->fullcone)
++					if(defs->fullcone == FULLCONE_CHION)
 +					{
 +						warn("%s will enable FULLCONE-NAT", zone->name);
 +						fw3_ipt_rule_target(r, "FULLCONENAT");
@@ -52,6 +60,12 @@ index 2aa7473..57eead0 100644
 +						fw3_ipt_rule_src_dest(r, msrc, mdest);
 +						fw3_ipt_rule_target(r, "FULLCONENAT");
 +						fw3_ipt_rule_append(r, "zone_%s_prerouting", zone->name);
++					}
++					else if (defs->fullcone == FULLCONE_BCM)
++					{
++						fw3_ipt_rule_target(r, "MASQUERADE");
++						fw3_ipt_rule_extra(r, "--mode fullcone");
++						fw3_ipt_rule_append(r, "zone_%s_postrouting", zone->name);
 +					}
 +					else
 +					{

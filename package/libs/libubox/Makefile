@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libubox
-PKG_RELEASE=2
+PKG_RELEASE=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/libubox.git
-PKG_MIRROR_HASH:=7dd1db1e0074a9c7c722db654cce3111b3bd3cff0bfd791c4497cb0f6c22d3ca
-PKG_SOURCE_DATE:=2021-05-16
-PKG_SOURCE_VERSION:=b14c4688612c05c78ce984d7bde633bce8703b1e
+PKG_MIRROR_HASH:=3433e1d54bdf9685397cb9ba8b600636b3db7baf1b8578935309aee60eb2cf20
+PKG_SOURCE_DATE:=2021-11-04
+PKG_SOURCE_VERSION:=be3dc7223a6d75587e26f8b8d6d56920841e44b6
 PKG_ABI_VERSION:=$(call abi_version_str,$(PKG_SOURCE_DATE))
 CMAKE_INSTALL:=1
 
@@ -48,7 +48,7 @@ define Package/jshn
 endef
 
 define Package/jshn/description
-  Library for parsing and generating JSON from shell scripts
+  Library for parsing and generating JSON from shell scripts.
 endef
 
 define Package/libjson-script
@@ -67,9 +67,8 @@ define Package/libubox-lua
 endef
 
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include
-CMAKE_OPTIONS += \
-	-DLUAPATH=/usr/lib/lua \
-	-DABIVERSION="$(PKG_ABI_VERSION)"
+
+CMAKE_OPTIONS += -DLUAPATH=/usr/lib/lua -DABIVERSION="$(PKG_ABI_VERSION)"
 
 define Package/libubox/install
 	$(INSTALL_DIR) $(1)/lib/
@@ -97,13 +96,12 @@ define Package/libubox-lua/install
 	$(CP) $(PKG_BUILD_DIR)/lua/uloop.so $(1)/usr/lib/lua/
 endef
 
-
 CMAKE_HOST_OPTIONS += \
-	-DBUILD_LUA=OFF \
-	-DBUILD_EXAMPLES=OFF \
-	-DCMAKE_SKIP_RPATH=FALSE \
-	-DCMAKE_MACOSX_RPATH=1 \
-	-DCMAKE_INSTALL_RPATH="${STAGING_DIR_HOST}/lib" \
+  -DBUILD_LUA=OFF \
+  -DBUILD_EXAMPLES=OFF \
+  -DCMAKE_SKIP_RPATH=FALSE \
+  -DCMAKE_MACOSX_RPATH=1 \
+  -DCMAKE_INSTALL_RPATH="${STAGING_DIR_HOST}/lib"
 
 $(eval $(call BuildPackage,libubox))
 $(eval $(call BuildPackage,libblobmsg-json))

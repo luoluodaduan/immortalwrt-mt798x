@@ -4,5 +4,5 @@ START=99
 USE_PROCD=1
 
 start_service() {
-    /sbin/smp.sh
+	/sbin/smp.sh
 }

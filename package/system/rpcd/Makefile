@@ -1,9 +1,7 @@
-#
 # Copyright (C) 2013-2016 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
-#
 
 include $(TOPDIR)/rules.mk
 
@@ -39,13 +37,12 @@ define Package/rpcd/default
 endef
 
 define Package/rpcd
-  $(Package/rpcd/default)
+$(Package/rpcd/default)
   DEPENDS+= +libuci +libblobmsg-json +libjson-c
 endef
 
 define Package/rpcd/description
- This package provides the UBUS RPC backend server to expose various
- functionality to frontend programs via JSON-RPC.
+  This package provides the UBUS RPC backend server to expose various functionality to frontend programs via JSON-RPC.
 endef
 
 define Package/rpcd/conffiles
@@ -67,31 +64,21 @@ define Package/rpcd/install
 	$(INSTALL_BIN) ./files/50-migrate-rpcd-ubus-sock.sh $(1)/etc/uci-defaults
 endef
 
-
-# 1: plugin name
-# 2: extra dependencies
-# 3: plugin title/description
 define BuildPlugin
-
   PKG_CONFIG_DEPENDS += CONFIG_PACKAGE_luci-rpc-mod-$(1)
-
   define Package/rpcd-mod-$(1)
     $(Package/rpcd/default)
     TITLE+= ($(1) plugin)
     DEPENDS+=rpcd $(2)
   endef
-
   define Package/rpcd-mod-$(1)/description
     $(3)
   endef
-
   define Package/rpcd-mod-$(1)/install
-	$(INSTALL_DIR) $$(1)/usr/lib/rpcd
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(1).so $$(1)/usr/lib/rpcd/
+		$(INSTALL_DIR) $$(1)/usr/lib/rpcd
+		$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(1).so $$(1)/usr/lib/rpcd/
   endef
-
   $$(eval $$(call BuildPackage,rpcd-mod-$(1)))
-
 endef
 
 $(eval $(call BuildPackage,rpcd))

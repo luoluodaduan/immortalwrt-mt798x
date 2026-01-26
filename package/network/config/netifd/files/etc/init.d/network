@@ -46,13 +46,12 @@ stop_service() {
 
 service_running() {
 	if [ -f "/lib/wifi/mtwifi.lua" ]; then
-        ubus -t 120 wait_for network.interface.lan
-        /sbin/wifi reload_legacy
+		ubus -t 120 wait_for network.interface.lan
+		/sbin/wifi reload_legacy
 	fi
 }
 
-validate_atm_bridge_section()
-{
+validate_atm_bridge_section() {
 	uci_validate_section network "atm-bridge" "${1}" \
 		'unit:uinteger:0' \
 		'vci:range(32, 65535):35' \
@@ -62,8 +61,7 @@ validate_atm_bridge_section()
 		'payload:or("bridged", "routed"):bridged'
 }
 
-validate_route_section()
-{
+validate_route_section() {
 	uci_validate_section network route "${1}" \
 		'interface:string' \
 		'target:cidr4' \
@@ -74,8 +72,7 @@ validate_route_section()
 		'table:or(range(0,65535),string)'
 }
 
-validate_route6_section()
-{
+validate_route6_section() {
 	uci_validate_section network route6 "${1}" \
 		'interface:string' \
 		'target:cidr6' \
@@ -85,8 +82,7 @@ validate_route6_section()
 		'table:or(range(0,65535),string)'
 }
 
-validate_rule_section()
-{
+validate_rule_section() {
 	uci_validate_section network rule "${1}" \
 		'in:string' \
 		'out:string' \
@@ -100,8 +96,7 @@ validate_rule_section()
 		'action:or("prohibit", "unreachable", "blackhole", "throw")'
 }
 
-validate_rule6_section()
-{
+validate_rule6_section() {
 	uci_validate_section network rule6 "${1}" \
 		'in:string' \
 		'out:string' \
@@ -115,8 +110,7 @@ validate_rule6_section()
 		'action:or("prohibit", "unreachable", "blackhole", "throw")'
 }
 
-validate_switch_section()
-{
+validate_switch_section() {
 	uci_validate_section network switch "${1}" \
 		'name:string' \
 		'enable:bool' \
@@ -126,16 +120,14 @@ validate_switch_section()
 		'ar8xxx_mib_type:range(0,1)'
 }
 
-validate_switch_vlan()
-{
+validate_switch_vlan() {
 	uci_validate_section network switch_vlan "${1}" \
 		'device:string' \
 		'vlan:uinteger' \
 		'ports:list(ports)'
 }
 
-service_triggers()
-{
+service_triggers() {
 	procd_add_reload_trigger network wireless
 
 	procd_open_validate
@@ -154,4 +146,3 @@ shutdown() {
 	ifdown -a
 	sleep 1
 }
-

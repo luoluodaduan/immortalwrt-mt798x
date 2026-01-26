@@ -1,58 +1,50 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2006 OpenWrt.org
 
-START=50
+START=60
 USE_PROCD=1
+PROG=/usr/sbin/eqos
 
 parse_device() {
 	local cfg="$1"
+	local enabled ip download upload comment mac
 
-	local enabled
 	config_get_bool enabled "$cfg" "enabled" "1"
-	[ "$enabled" -eq "1" ] || return 1
-	
+	[ "$enabled" -eq "1" ] || return 0
 
-	local ip download upload comment mac
 	config_get ip "$cfg" ip
-	config_get download "$cfg" "download"
-	config_get upload "$cfg" "upload"
-	config_get comment "$cfg" "comment"
+	config_get download "$cfg" "download" "0"
+	config_get upload "$cfg" "upload" "0"
+	config_get comment "$cfg" "comment" "32"
 	config_get mac "$cfg" "mac"
 
-	eqos add "$ip" "$download" "$upload" "$comment" "$mac"
+	$PROG add "$ip" "$download" "$upload" "$comment" "$mac"
 }
 
 start_service() {
 	config_load "eqos"
 
-	local enabled
+	local enabled download upload ipv6enabled
 	config_get_bool enabled "config" "enabled" "0"
 	[ "$enabled" -eq "1" ] || return 1
-	
-	local download upload comment
-	config_get download "config" "download"
-	config_get upload "config" "upload"
-	config_get comment "config" "comment"
-	
-	eqos start "$download" "$upload" "$comment"
-	
-	local ipv6enabled                              
-        config_get_bool ipv6enabled "config" "ipv6enabled" "0"    
-        ip6tables -t mangle -N eqos
-        ip6tables -t mangle -F eqos
-        ebtables -t nat  -N eqos
-        ebtables -t nat  -F eqos
-        if [ "$ipv6enabled" -eq "1" ]; then                                
-        ebtables -t nat -D POSTROUTING  -j eqos -p ipv6              
-        ebtables -t nat -A POSTROUTING  -j eqos -p ipv6
-        ip6tables -t mangle -D FORWARD  -j eqos
-        ip6tables -t mangle -A FORWARD  -j eqos             
-        fi  
-        config_foreach parse_device "device"
+
+	config_get download "config" "download" "900"
+	config_get upload "config" "upload" "90"
+	config_get_bool ipv6enabled "config" "ipv6enabled" "0"
+
+	$PROG start "$download" "$upload"
+
+	if [ "$ipv6enabled" -eq "0" ]; then
+		ip6tables -t mangle -D FORWARD -j eqos 2>/dev/null
+		ebtables -t nat -D POSTROUTING -j eqos -p ipv6 2>/dev/null
+	fi
+
+	sleep 1
+	config_foreach parse_device "device"
 }
 
 stop_service() {
-	eqos stop
+	[ -x "$PROG" ] && $PROG stop
 }
 
 reload_service() {
@@ -62,4 +54,5 @@ reload_service() {
 
 service_triggers() {
 	procd_add_reload_trigger "eqos"
+	procd_add_network_trigger "lan"
 }

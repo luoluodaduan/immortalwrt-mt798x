@@ -1,10 +1,8 @@
-#
 # Copyright (C) 2007-2021 OpenWrt.org
 # Copyright (C) 2010 Vertical Communications
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
-#
 
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
@@ -21,13 +19,15 @@ PKG_LICENSE:=GPL-2.0
 
 # Extend depends from version.mk
 PKG_CONFIG_DEPENDS += \
-	CONFIG_SIGNED_PACKAGES CONFIG_TARGET_INIT_PATH CONFIG_TARGET_PREINIT_DISABLE_FAILSAFE \
-	CONFIG_NAND_SUPPORT \
-	CONFIG_EMMC_SUPPORT \
-	CONFIG_CLEAN_IPKG \
-	CONFIG_PER_FEED_REPO \
-	CONFIG_PACKAGE_wifi-profile \
-	$(foreach feed,$(FEEDS_AVAILABLE),CONFIG_FEED_$(feed))
+  CONFIG_SIGNED_PACKAGES \
+  CONFIG_TARGET_INIT_PATH \
+  CONFIG_TARGET_PREINIT_DISABLE_FAILSAFE \
+  CONFIG_NAND_SUPPORT \
+  CONFIG_EMMC_SUPPORT \
+  CONFIG_CLEAN_IPKG \
+  CONFIG_PER_FEED_REPO \
+  CONFIG_PACKAGE_wifi-profile \
+  $(foreach feed,$(FEEDS_AVAILABLE),CONFIG_FEED_$(feed))
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -49,7 +49,6 @@ define Package/base-files/conffiles
 /etc/config/
 /etc/config/network
 /etc/config/system
-/etc/crontabs/
 /etc/dropbear/
 /etc/ethers
 /etc/group
@@ -72,7 +71,7 @@ $(call $(TARGET)/conffiles)
 endef
 
 define Package/base-files/description
- This package contains a base filesystem and system scripts for OpenWrt.
+  This package contains a base filesystem and system scripts for OpenWrt.
 endef
 
 define ImageConfigOptions
@@ -84,9 +83,9 @@ define ImageConfigOptions
 	echo 'pi_init_cmd=$(if $(CONFIG_TARGET_INIT_CMD),$(CONFIG_TARGET_INIT_CMD),"/sbin/init")' >>$(1)/lib/preinit/00_preinit.conf
 	echo 'pi_init_suppress_stderr="$(CONFIG_TARGET_INIT_SUPPRESS_STDERR)"' >>$(1)/lib/preinit/00_preinit.conf
 	echo 'pi_ifname=$(if $(CONFIG_TARGET_PREINIT_IFNAME),$(CONFIG_TARGET_PREINIT_IFNAME),"")' >>$(1)/lib/preinit/00_preinit.conf
-	echo 'pi_ip=$(if $(CONFIG_TARGET_PREINIT_IP),$(CONFIG_TARGET_PREINIT_IP),"192.168.1.1")' >>$(1)/lib/preinit/00_preinit.conf
+	echo 'pi_ip=$(if $(CONFIG_TARGET_PREINIT_IP),$(CONFIG_TARGET_PREINIT_IP),"192.168.2.1")' >>$(1)/lib/preinit/00_preinit.conf
 	echo 'pi_netmask=$(if $(CONFIG_TARGET_PREINIT_NETMASK),$(CONFIG_TARGET_PREINIT_NETMASK),"255.255.255.0")' >>$(1)/lib/preinit/00_preinit.conf
-	echo 'pi_broadcast=$(if $(CONFIG_TARGET_PREINIT_BROADCAST),$(CONFIG_TARGET_PREINIT_BROADCAST),"192.168.1.255")' >>$(1)/lib/preinit/00_preinit.conf
+	echo 'pi_broadcast=$(if $(CONFIG_TARGET_PREINIT_BROADCAST),$(CONFIG_TARGET_PREINIT_BROADCAST),"192.168.2.255")' >>$(1)/lib/preinit/00_preinit.conf
 	echo 'pi_preinit_net_messages="$(CONFIG_TARGET_PREINIT_SHOW_NETMSG)"' >>$(1)/lib/preinit/00_preinit.conf
 	echo 'pi_preinit_no_failsafe_netmsg="$(CONFIG_TARGET_PREINIT_SUPPRESS_FAILSAFE_NETMSG)"' >>$(1)/lib/preinit/00_preinit.conf
 	echo 'pi_preinit_no_failsafe="$(CONFIG_TARGET_PREINIT_DISABLE_FAILSAFE)"' >>$(1)/lib/preinit/00_preinit.conf
@@ -97,41 +96,34 @@ define Build/Prepare
 endef
 
 define Build/Compile/Default
-
 endef
+
 Build/Compile = $(Build/Compile/Default)
 
 ifdef CONFIG_SIGNED_PACKAGES
   define Build/Configure
-	[ -s $(BUILD_KEY) -a -s $(BUILD_KEY).pub ] || \
-		$(STAGING_DIR_HOST)/bin/usign -G -s $(BUILD_KEY) -p $(BUILD_KEY).pub -c "Local build key"
-
-	[ -s $(BUILD_KEY).ucert ] || \
-		$(STAGING_DIR_HOST)/bin/ucert -I -c $(BUILD_KEY).ucert -p $(BUILD_KEY).pub -s $(BUILD_KEY)
-
+		[ -s $(BUILD_KEY) -a -s $(BUILD_KEY).pub ] || $(STAGING_DIR_HOST)/bin/usign -G -s $(BUILD_KEY) -p $(BUILD_KEY).pub -c "Local build key"
+		[ -s $(BUILD_KEY).ucert ] || $(STAGING_DIR_HOST)/bin/ucert -I -c $(BUILD_KEY).ucert -p $(BUILD_KEY).pub -s $(BUILD_KEY)
   endef
-
 ifndef CONFIG_BUILDBOT
   define Package/base-files/install-key
-	mkdir -p $(1)/etc/opkg/keys
-	$(CP) $(BUILD_KEY).pub $(1)/etc/opkg/keys/`$(STAGING_DIR_HOST)/bin/usign -F -p $(BUILD_KEY).pub`
-
+		mkdir -p $(1)/etc/opkg/keys
+		$(CP) $(BUILD_KEY).pub $(1)/etc/opkg/keys/`$(STAGING_DIR_HOST)/bin/usign -F -p $(BUILD_KEY).pub`
   endef
 endif
 endif
 
 ifeq ($(CONFIG_NAND_SUPPORT),)
   define Package/base-files/nand-support
-	rm -f $(1)/lib/upgrade/nand.sh
+		rm -f $(1)/lib/upgrade/nand.sh
   endef
 endif
 
 ifeq ($(CONFIG_EMMC_SUPPORT),)
   define Package/base-files/emmc-support
-	rm -f $(1)/lib/upgrade/emmc.sh
+		rm -f $(1)/lib/upgrade/emmc.sh
   endef
 endif
-
 
 define Package/base-files/install
 	$(CP) ./files/* $(1)/

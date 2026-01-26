@@ -4,8 +4,7 @@ START=19
 USE_PROCD=1
 QUIET=""
 
-validate_firewall_redirect()
-{
+validate_firewall_redirect() {
 	uci_validate_section firewall redirect "${1}" \
 		'proto:or(uinteger, string)' \
 		'src:string' \
@@ -17,8 +16,7 @@ validate_firewall_redirect()
 		'target:or("SNAT", "DNAT")'
 }
 
-validate_firewall_rule()
-{
+validate_firewall_rule() {
 	uci_validate_section firewall rule "${1}" \
 		'proto:or(uinteger, string)' \
 		'src:string' \
@@ -29,7 +27,7 @@ validate_firewall_rule()
 }
 
 service_triggers() {
-	procd_add_reload_trigger firewall	
+	procd_add_reload_trigger firewall
 
 	procd_open_validate
 	validate_firewall_redirect

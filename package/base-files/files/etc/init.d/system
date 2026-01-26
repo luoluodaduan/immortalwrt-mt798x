@@ -19,12 +19,15 @@ system_config() {
 		return 1
 	}
 
-	echo "$hostname" > /proc/sys/kernel/hostname
+	echo "$hostname" >/proc/sys/kernel/hostname
 	[ -z "$conloglevel" -a -z "$buffersize" ] || dmesg ${conloglevel:+-n $conloglevel} ${buffersize:+-s $buffersize}
-	echo "$timezone" > /tmp/TZ
-	[ -n "$zonename" ] && [ -f "/usr/share/zoneinfo/${zonename// /_}" ] \
-		&& ln -sf "/usr/share/zoneinfo/${zonename// /_}" /tmp/localtime \
-		&& rm -f /tmp/TZ
+	echo "$timezone" >/tmp/TZ
+
+	local z_file=$(echo "$zonename" | tr ' ' '_')
+	if [ -n "$z_file" ] && [ -f "/usr/share/zoneinfo/$z_file" ]; then
+		ln -sf "/usr/share/zoneinfo/$z_file" /tmp/localtime
+		rm -f /tmp/TZ
+	fi
 
 	# apply timezone to kernel
 	hwclock -u --systz

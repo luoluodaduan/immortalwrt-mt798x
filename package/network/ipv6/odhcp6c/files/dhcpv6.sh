@@ -60,34 +60,20 @@ proto_dhcpv6_setup() {
 	# Configure
 	local opts=""
 	[ -n "$reqaddress" ] && append opts "-N$reqaddress"
-
 	[ -z "$reqprefix" -o "$reqprefix" = "auto" ] && reqprefix=0
 	[ "$reqprefix" != "no" ] && append opts "-P$reqprefix"
-
 	[ -n "$clientid" ] && append opts "-c$clientid"
-
 	[ "$defaultreqopts" = "0" ] && append opts "-R"
-
 	[ "$noslaaconly" = "1" ] && append opts "-S"
-
 	[ "$forceprefix" = "1" ] && append opts "-F"
-
 	[ "$norelease" = "1" ] && append opts "-k"
-
 	[ "$noserverunicast" = "1" ] && append opts "-U"
-
 	[ "$noclientfqdn" = "1" ] && append opts "-f"
-
 	[ "$noacceptreconfig" = "1" ] && append opts "-a"
-
 	[ -n "$ifaceid" ] && append opts "-i$ifaceid"
-
 	[ -n "$vendorclass" ] && append opts "-V$vendorclass"
-
 	[ -n "$userclass" ] && append opts "-u$userclass"
-
 	[ "$keep_ra_dnslifetime" = "1" ] && append opts "-L"
-
 	[ -n "$ra_holdoff" ] && append opts "-m$ra_holdoff"
 
 	local opt
@@ -105,6 +91,7 @@ proto_dhcpv6_setup() {
 	[ -n "$iface_464xlat" ] && proto_export "IFACE_464XLAT=$iface_464xlat"
 	[ "$delegate" = "0" ] && proto_export "IFACE_DSLITE_DELEGATE=0"
 	[ "$delegate" = "0" ] && proto_export "IFACE_MAP_DELEGATE=0"
+	[ "$delegate" = "0" ] && proto_export "IFACE_464XLAT_DELEGATE=0"
 	[ -n "$zone_dslite" ] && proto_export "ZONE_DSLITE=$zone_dslite"
 	[ -n "$zone_map" ] && proto_export "ZONE_MAP=$zone_map"
 	[ -n "$zone_464xlat" ] && proto_export "ZONE_464XLAT=$zone_464xlat"
@@ -134,4 +121,3 @@ proto_dhcpv6_teardown() {
 }
 
 add_protocol dhcpv6
-

@@ -12,137 +12,169 @@ stop_qos() {
 start_qos() {
 	local dl=$1
 	local up=$2
-	
-	tc qdisc add dev $dev root handle 1: htb
+
+	tc qdisc add dev $dev root handle 1: htb default 1 r2q 100
 	tc class add dev $dev parent 1: classid 1:1 htb rate ${dl}mbit
-	
-	ip link add dev ${dev}-ifb name ${dev}-ifb type ifb
+
+	ip link add dev ${dev}-ifb name ${dev}-ifb type ifb 2>/dev/null
 	ip link set dev ${dev}-ifb up
-	
-	tc qdisc add dev ${dev}-ifb root handle 1: htb
+
+	tc qdisc add dev ${dev}-ifb root handle 1: htb default 1 r2q 100
 	tc class add dev ${dev}-ifb parent 1: classid 1:1 htb rate ${up}mbit
-	
+
 	tc qdisc add dev $dev ingress
 	tc filter add dev $dev parent ffff: protocol ip u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ${dev}-ifb
 }
 
 iptables_stop() {
-		iptables -t mangle -D FORWARD  -j eqos
-		ip6tables -t mangle -D FORWARD  -j eqos
-		ebtables -t nat -D POSTROUTING  -j eqos -p ipv6
-		echo 0 > /sys/kernel/debug/hnat/qos_toggle
-		sed -i '/\/etc\/init.d\/eqos start/d' /etc/firewall.user
-		iptables -t mangle -D FORWARD -i br-lan -j DSCP --set-dscp 0
-		iptables -t mangle -D FORWARD -o br-lan -j DSCP --set-dscp 0
-		ip6tables -t mangle -D FORWARD -i br-lan -j DSCP --set-dscp 0
-		ip6tables -t mangle -D FORWARD -o br-lan -j DSCP --set-dscp 0
-		echo "10 0" > /sys/kernel/debug/hnat/hnat_setting
-		echo "11 30" >/sys/kernel/debug/hnat/hnat_setting
-		for i in $(seq 0 31); do
-		echo 0 0 0 0 0 4 4 > $hqos_path/qdma_txq$i
-		done
-		for i in $(seq 32 63); do
-		echo 1 0 0 0 0 4 4 > $hqos_path/qdma_txq$i
-		done	
-		echo 0 wrr 10000000 > /sys/kernel/debug/hnat/qdma_sch0
-		echo 0 wrr 10000000 > /sys/kernel/debug/hnat/qdma_sch1
-		echo 0 wrr 10000000 > /sys/kernel/debug/hnat/qdma_sch2
-		echo 0 wrr 10000000 > /sys/kernel/debug/hnat/qdma_sch3
+	iptables -t mangle -D FORWARD -j eqos 2>/dev/null
+	ip6tables -t mangle -D FORWARD -j eqos 2>/dev/null
+	ebtables -t nat -D POSTROUTING -j eqos -p ipv6 2>/dev/null
+
+	iptables -t mangle -F eqos 2>/dev/null && iptables -t mangle -X eqos 2>/dev/null
+	ip6tables -t mangle -F eqos 2>/dev/null && ip6tables -t mangle -X eqos 2>/dev/null
+	ebtables -t nat -F eqos 2>/dev/null && ebtables -t nat -X eqos 2>/dev/null
+
+	echo 0 >/sys/kernel/debug/hnat/qos_toggle
+	sed -i '/\/usr\/bin\/eqos start/d' /etc/firewall.user
+
+	iptables -t mangle -D FORWARD -i $dev -j DSCP --set-dscp 0 2>/dev/null
+	iptables -t mangle -D FORWARD -o $dev -j DSCP --set-dscp 0 2>/dev/null
+
+	echo "10 0" >/sys/kernel/debug/hnat/hnat_setting
+	echo "11 30" >/sys/kernel/debug/hnat/hnat_setting
+	for i in $(seq 0 31); do
+		echo 0 0 0 0 0 4 4 >/sys/kernel/debug/hnat/qdma_txq$i
+	done
+	for i in $(seq 32 63); do
+		echo 1 0 0 0 0 4 4 >/sys/kernel/debug/hnat/qdma_txq$i
+	done
+	echo 0 wrr 10000000 >/sys/kernel/debug/hnat/qdma_sch0
+	echo 0 wrr 10000000 >/sys/kernel/debug/hnat/qdma_sch1
+	echo 0 wrr 10000000 >/sys/kernel/debug/hnat/qdma_sch2
+	echo 0 wrr 10000000 >/sys/kernel/debug/hnat/qdma_sch3
 }
 
 iptables_start_prepare() {
-		iptables -t mangle -D FORWARD -i br-lan -j DSCP --set-dscp 0
-		iptables -t mangle -D FORWARD -o br-lan -j DSCP --set-dscp 0
-		iptables -t mangle -A FORWARD -i br-lan -j DSCP --set-dscp 0
-		iptables -t mangle -A FORWARD -o br-lan -j DSCP --set-dscp 0
-		ip6tables -t mangle -D FORWARD -i br-lan -j DSCP --set-dscp 0
-		ip6tables -t mangle -D FORWARD -o br-lan -j DSCP --set-dscp 0
-		ip6tables -t mangle -A FORWARD -i br-lan -j DSCP --set-dscp 0
-		ip6tables -t mangle -A FORWARD -o br-lan -j DSCP --set-dscp 0
+	iptables -t mangle -D FORWARD -i $dev -j DSCP --set-dscp 0 2>/dev/null
+	iptables -t mangle -A FORWARD -i $dev -j DSCP --set-dscp 0
+	iptables -t mangle -D FORWARD -o $dev -j DSCP --set-dscp 0 2>/dev/null
+	iptables -t mangle -A FORWARD -o $dev -j DSCP --set-dscp 0
 }
 
-iptables_start_inital() {
-		iptables -t mangle -N eqos
-		iptables -t mangle -F eqos
-		iptables -t mangle -D FORWARD  -j eqos
-		iptables -t mangle -A FORWARD  -j eqos	
-		echo 1 > /sys/kernel/debug/hnat/qos_toggle
-		echo 0 wrr 10000000 > /sys/kernel/debug/hnat/qdma_sch0
-		echo 0 wrr 10000000 > /sys/kernel/debug/hnat/qdma_sch1
-		echo 0 0 0 0 0 0 0 > /sys/kernel/debug/hnat/qdma_txq0
-		echo 1 0 0 0 0 0 0 > /sys/kernel/debug/hnat/qdma_txq8
-		echo "11 5" >/sys/kernel/debug/hnat/hnat_setting
-		uci -q set "turboacc.config.fastpath_mh_eth_hnat_bind_rate"="5"
-		uci -q commit "turboacc"
-		sed -i '/\/etc\/init.d\/eqos start/d' /etc/firewall.user
-		echo "/etc/init.d/eqos start" >> /etc/firewall.user
-		echo "10 1" > /sys/kernel/debug/hnat/hnat_setting
+iptables_start_initial() {
+	for cmd in "iptables -t mangle" "ip6tables -t mangle" "ebtables -t nat"; do
+		$cmd -N eqos 2>/dev/null
+		$cmd -F eqos
+	done
+
+	iptables -t mangle -I FORWARD -j eqos
+	ip6tables -t mangle -I FORWARD -j eqos
+	ebtables -t nat -I POSTROUTING -j eqos -p ipv6
+
+	echo 1 >/sys/kernel/debug/hnat/qos_toggle
+	echo 0 wrr 10000000 >/sys/kernel/debug/hnat/qdma_sch0
+	echo 0 wrr 10000000 >/sys/kernel/debug/hnat/qdma_sch1
+	echo 0 0 0 0 0 0 0 >/sys/kernel/debug/hnat/qdma_txq0
+	echo 1 0 0 0 0 0 0 >/sys/kernel/debug/hnat/qdma_txq8
+	echo "11 5" >/sys/kernel/debug/hnat/hnat_setting
+
+	uci -q set "turboacc.config.fastpath_mh_eth_hnat_bind_rate"="30"
+	uci -q commit "turboacc"
+
+	sed -i '/\/usr\/bin\/eqos start/d' /etc/firewall.user
+	echo "/usr/bin/eqos start" >>/etc/firewall.user
+	echo "10 1" >/sys/kernel/debug/hnat/hnat_setting
 }
 
+check_conflicts() {
+	local sw_off=$(uci -q get firewall.@defaults[0].flow_offloading)
+	local hw_off=$(uci -q get firewall.@defaults[0].flow_offloading_hw)
+
+	if [ "$sw_off" = "1" ] || [ "$hw_off" = "1" ]; then
+		uci set firewall.@defaults[0].flow_offloading='0'
+		uci set firewall.@defaults[0].flow_offloading_hw='0'
+		uci commit firewall
+		/etc/init.d/firewall restart
+		sleep 2
+	fi
+}
 
 case "$1" in
-	"stop")
-		stop_qos
-		iptables_stop
+"stop")
+	stop_qos
+	iptables_stop
 	;;
-	"start")
-		stop_qos
-		iptables_start_prepare
-		start_qos $2 $3
-		iptables_start_inital
-		echo 1 wrr $(($3*1000)) > /sys/kernel/debug/hnat/qdma_sch2
-		echo 1 wrr $(($2*1000)) > /sys/kernel/debug/hnat/qdma_sch3
+"start")
+	check_conflicts
+	total_dl=$2
+	total_up=$3
+	stop_qos
+	iptables_start_prepare
+	start_qos $total_dl $total_up
+	iptables_start_initial
+	echo 1 wrr $(($total_up * 1000)) >/sys/kernel/debug/hnat/qdma_sch2
+	echo 1 wrr $(($total_dl * 1000)) >/sys/kernel/debug/hnat/qdma_sch3
 	;;
-	"add")
-		ip="$2"
-		dl="$3"
-		up="$4"
-		id="$5" idpair=$((id+32))
-		macaddr="$6"
-		cnt=$(tc class show dev $dev | wc -l)
-		
-		
-		if [ $id -lt 32 ]; then
-		iptables -t mangle -D eqos -s $ip -j DSCP --set-dscp ${id}
-		iptables -t mangle -D eqos -d $ip -j DSCP --set-dscp ${idpair}
-		ip6tables -t mangle -D eqos -m mac --mac-source $macaddr -j MARK --set-mark ${id}
-		ebtables -t nat -D eqos -p ipv6 -d $macaddr -j mark --mark-set ${idpair}
-		if [ $up -ne 0 ]; then
-		echo 2 0 0 1 ${up} 4 1 > /sys/kernel/debug/hnat/qdma_txq${id}
-		iptables -t mangle -A eqos -s $ip -j DSCP --set-dscp ${id}
-		ip6tables -t mangle -A eqos -m mac --mac-source $macaddr -j MARK --set-mark ${id}
-		fi
+"add")
+	ip="$2"
+	dl="$3"
+	up="$4"
+	id="$5"
+	macaddr="$6"
+	idpair=$((id + 32))
+
+	iptables -t mangle -D eqos -s $ip -j DSCP --set-dscp ${id} 2>/dev/null
+	iptables -t mangle -D eqos -d $ip -j DSCP --set-dscp ${idpair} 2>/dev/null
+
+	if [ -n "$macaddr" ]; then
+		ip6tables -t mangle -D eqos -m mac --mac-source $macaddr -j MARK --set-mark ${id} 2>/dev/null
+		ip6tables -t mangle -D eqos -m mac --mac-source $macaddr -j MARK --set-mark ${idpair} 2>/dev/null
+		ebtables -t nat -D eqos -p ipv6 -d $macaddr -j mark --mark-set ${id} 2>/dev/null
+		ebtables -t nat -D eqos -p ipv6 -d $macaddr -j mark --mark-set ${idpair} 2>/dev/null
+	fi
+
+	tc filter del dev $dev parent 1:0 protocol ip prio 1 handle 800::${id} u32 2>/dev/null
+	tc filter del dev $dev parent 1:0 protocol ipv6 handle ${id} fw 2>/dev/null
+	tc class del dev $dev parent 1:1 classid 1:${id} 2>/dev/null
+	tc filter del dev ${dev}-ifb parent 1:0 protocol ip prio 1 handle 800::${id} u32 2>/dev/null
+	tc filter del dev ${dev}-ifb parent 1:0 protocol ipv6 handle ${id} fw 2>/dev/null
+	tc class del dev ${dev}-ifb parent 1:1 classid 1:${id} 2>/dev/null
+
+	if [ $id -lt 32 ]; then
+		[ $up -ne 0 ] && {
+			echo 2 0 0 1 ${up} 4 1 >/sys/kernel/debug/hnat/qdma_txq${id}
+			iptables -t mangle -A eqos -s $ip -j DSCP --set-dscp ${id}
+			[ -n "$macaddr" ] && ip6tables -t mangle -A eqos -m mac --mac-source $macaddr -j MARK --set-mark ${id}
+		}
+		[ $dl -ne 0 ] && {
+			echo 3 0 0 1 ${dl} 4 1 >/sys/kernel/debug/hnat/qdma_txq${idpair}
+			iptables -t mangle -A eqos -d $ip -j DSCP --set-dscp ${idpair}
+			[ -n "$macaddr" ] && ebtables -t nat -A eqos -p ipv6 -d $macaddr -j mark --mark-set ${idpair}
+		}
+	else
 		if [ $dl -ne 0 ]; then
-		echo 3 0 0 1 ${dl} 4 1 > /sys/kernel/debug/hnat/qdma_txq${idpair}
-		iptables -t mangle -A eqos -d $ip -j DSCP --set-dscp ${idpair}
-		ebtables -t nat -A eqos -p ipv6 -d $macaddr -j mark --mark-set ${idpair}
+			tc class add dev $dev parent 1:1 classid 1:${id} htb rate ${dl}mbit ceil ${dl}mbit
+			tc filter add dev $dev parent 1:0 protocol ip prio 1 handle 800::${id} u32 match ip dst $ip flowid 1:${id}
+
+			if [ -n "$macaddr" ]; then
+				ebtables -t nat -A eqos -p ipv6 -d $macaddr -j mark --mark-set ${id}
+				tc filter add dev $dev parent 1:0 protocol ipv6 handle ${id} fw flowid 1:${id}
+			fi
 		fi
-		else
-		iptables -t mangle -D eqos -s $ip -j MARK --set-mark 0x99
-		iptables -t mangle -D eqos -d $ip -j MARK --set-mark 0x99
+
 		if [ $up -ne 0 ]; then
-		iptables -t mangle -A eqos -s $ip -j MARK --set-mark 0x99
+			tc class add dev ${dev}-ifb parent 1:1 classid 1:${id} htb rate ${up}mbit ceil ${up}mbit
+			tc filter add dev ${dev}-ifb parent 1:0 protocol ip prio 1 handle 800::${id} u32 match ip src $ip flowid 1:${id}
+
+			if [ -n "$macaddr" ]; then
+				ip6tables -t mangle -A eqos -m mac --mac-source $macaddr -j MARK --set-mark ${id}
+				tc filter add dev ${dev}-ifb parent 1:0 protocol ipv6 handle ${id} fw flowid 1:${id}
+			fi
 		fi
-		if [ $dl -ne 0 ]; then
-		iptables -t mangle -A eqos -d $ip -j MARK --set-mark 0x99
-		fi
-		fi
-		if [ $id -gt 31 ]; then
-		tc class add dev $dev parent 1:1 classid 1:1$cnt htb rate ${dl}kbit ceil ${dl}kbit
-		tc filter add dev $dev parent 1:0 protocol ip u32 match ip dst $ip flowid 1:1$cnt
-		
-		tc class add dev ${dev}-ifb parent 1:1 classid 1:1$cnt htb rate ${up}kbit ceil ${up}kbit
-		tc filter add dev ${dev}-ifb parent 1:0 protocol ip u32 match ip src $ip flowid 1:1$cnt
-		fi
+	fi
 	;;
-	*)
-		echo "Usage: $0 <command> [options]"
-		echo "Commands:"
-		echo "  start dl_rate up_rate       #Total bandwidth (Mbit/s)"
-		echo "  stop"
-		echo "  add ip dl_rate up_rate      #Limiting the bandwidth of a single IP (kbit/s)"
-		echo "Example:"
-		echo "  $0 start 30 20              # Total bandwidth: down 30Mbit/s up 20Mbit/s"
-		echo "  $0 add 192.168.22.12 10 2   # down 10kbit/s  up 2kbit/s"
+*)
+	echo "Usage: $0 {start total_dl total_up | stop | add ip dl up id mac}"
 	;;
 esac
