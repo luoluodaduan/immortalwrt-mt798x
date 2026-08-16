@@ -6,13 +6,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dnsmasq
-PKG_UPSTREAM_VERSION:=2.91
+PKG_UPSTREAM_VERSION:=2.93
 PKG_VERSION:=$(subst test,~~test,$(subst rc,~rc,$(PKG_UPSTREAM_VERSION)))
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_UPSTREAM_VERSION).tar.xz
 PKG_SOURCE_URL:=https://thekelleys.org.uk/dnsmasq/
-PKG_HASH:=f622682848b33677adb2b6ad08264618a2ae0a01da486a93fd8cd91186b3d153
+PKG_HASH:=0c00d4e5c97c8306e5fb932b348b34269c9c29a0e7df0e8e82958b407092bc19
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYING
@@ -41,13 +41,14 @@ define Package/dnsmasq/Default
   CATEGORY:=Base system
   TITLE:=DNS and DHCP server
   URL:=http://www.thekelleys.org.uk/dnsmasq/
-  DEPENDS:=+libubus
+  DEPENDS:=+libubus +@BUSYBOX_CONFIG_PIDOF
   USERID:=dnsmasq=453:dnsmasq=453
 endef
 
 define Package/dnsmasq
 $(call Package/dnsmasq/Default)
   VARIANT:=nodhcpv6
+  DEFAULT_VARIANT:=1
 endef
 
 define Package/dnsmasq-dhcpv6
@@ -94,28 +95,36 @@ define Package/dnsmasq-full/config
   config PACKAGE_dnsmasq_full_dhcp
     bool "Build with DHCP support."
     default y
+
   config PACKAGE_dnsmasq_full_dhcpv6
     bool "Build with DHCPv6 support."
     depends on IPV6 && PACKAGE_dnsmasq_full_dhcp
     default y
+
   config PACKAGE_dnsmasq_full_dnssec
     bool "Build with DNSSEC support."
     default n
+
   config PACKAGE_dnsmasq_full_auth
     bool "Build with the facility to act as an authoritative DNS server."
     default y
+
   config PACKAGE_dnsmasq_full_ipset
     bool "Build with IPset support."
     default y
+
   config PACKAGE_dnsmasq_full_conntrack
     bool "Build with Conntrack support."
     default y
+
   config PACKAGE_dnsmasq_full_noid
     bool "Build with NO_ID. (hide *.bind pseudo domain)"
     default y
+
   config PACKAGE_dnsmasq_full_broken_rtc
     bool "Build with HAVE_BROKEN_RTC."
     default n
+
   config PACKAGE_dnsmasq_full_tftp
     bool "Build with TFTP server support."
     default y

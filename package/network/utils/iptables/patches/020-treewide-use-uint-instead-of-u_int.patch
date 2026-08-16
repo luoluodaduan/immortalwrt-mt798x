@@ -1,0 +1,111 @@
+--- a/extensions/libxt_conntrack.c
++++ b/extensions/libxt_conntrack.c
+@@ -778,7 +778,7 @@
+ 
+ static void
+ conntrack_dump_ports(const char *prefix, const char *opt,
+-		     u_int16_t port_low, u_int16_t port_high)
++		     uint16_t port_low, uint16_t port_high)
+ {
+ 	if (port_high == 0 || port_low == port_high)
+ 		printf(" %s%s %u", prefix, opt, port_low);
+--- a/include/libipq/libipq.h
++++ b/include/libipq/libipq.h
+@@ -24,7 +24,7 @@
+ #include <errno.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+-#include <sys/types.h>
++#include <stdint.h>
+ #include <sys/socket.h>
+ #include <sys/uio.h>
+ #include <asm/types.h>
+@@ -48,19 +48,19 @@
+ struct ipq_handle
+ {
+ 	int fd;
+-	u_int8_t blocking;
++	uint8_t blocking;
+ 	struct sockaddr_nl local;
+ 	struct sockaddr_nl peer;
+ };
+ 
+-struct ipq_handle *ipq_create_handle(u_int32_t flags, u_int32_t protocol);
++struct ipq_handle *ipq_create_handle(uint32_t flags, uint32_t protocol);
+ 
+ int ipq_destroy_handle(struct ipq_handle *h);
+ 
+ ssize_t ipq_read(const struct ipq_handle *h,
+                 unsigned char *buf, size_t len, int timeout);
+ 
+-int ipq_set_mode(const struct ipq_handle *h, u_int8_t mode, size_t len);
++int ipq_set_mode(const struct ipq_handle *h, uint8_t mode, size_t len);
+ 
+ ipq_packet_msg_t *ipq_get_packet(const unsigned char *buf);
+ 
+--- a/include/libiptc/libxtc.h
++++ b/include/libiptc/libxtc.h
+@@ -10,7 +10,7 @@
+ #endif
+ 
+ #ifndef XT_MIN_ALIGN
+-/* xt_entry has pointers and u_int64_t's in it, so if you align to
++/* xt_entry has pointers and uint64_t's in it, so if you align to
+    it, you'll also align to any crazy matches and targets someone
+    might write */
+ #define XT_MIN_ALIGN (__alignof__(struct xt_entry))
+--- a/include/linux/netfilter_arp/arpt_mangle.h
++++ b/include/linux/netfilter_arp/arpt_mangle.h
+@@ -13,7 +13,7 @@
+ 	union {
+ 		struct in_addr tgt_ip;
+ 	} u_t;
+-	u_int8_t flags;
++	__u8 flags;
+ 	int target;
+ };
+ 
+--- a/iptables/xshared.c
++++ b/iptables/xshared.c
+@@ -1025,7 +1025,7 @@
+ };
+ 
+ void
+-set_option(unsigned int *options, unsigned int option, u_int16_t *invflg,
++set_option(unsigned int *options, unsigned int option, uint16_t *invflg,
+ 	   bool invert)
+ {
+ 	if (*options & option)
+--- a/iptables/xshared.h
++++ b/iptables/xshared.h
+@@ -80,7 +80,7 @@
+ #define IPT_INV_ARPHRD		0x0800
+ 
+ void
+-set_option(unsigned int *options, unsigned int option, u_int16_t *invflg,
++set_option(unsigned int *options, unsigned int option, uint16_t *invflg,
+ 	   bool invert);
+ 
+ /**
+--- a/libipq/ipq_create_handle.3
++++ b/libipq/ipq_create_handle.3
+@@ -24,7 +24,7 @@
+ .br
+ .B #include <libipq.h>
+ .sp
+-.BI "struct ipq_handle *ipq_create_handle(u_int32_t " flags ", u_int32_t " protocol ");"
++.BI "struct ipq_handle *ipq_create_handle(uint32_t " flags ", uint32_t " protocol ");"
+ .br
+ .BI "int ipq_destroy_handle(struct ipq_handle *" h );
+ .SH DESCRIPTION
+--- a/libipq/ipq_set_mode.3
++++ b/libipq/ipq_set_mode.3
+@@ -24,7 +24,7 @@
+ .br
+ .B #include <libipq.h>
+ .sp
+-.BI "int ipq_set_mode(const struct ipq_handle *" h ", u_int8_t " mode ", size_t " range );
++.BI "int ipq_set_mode(const struct ipq_handle *" h ", uint8_t " mode ", size_t " range );
+ .SH DESCRIPTION
+ The
+ .B ipq_set_mode

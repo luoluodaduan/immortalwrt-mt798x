@@ -10,8 +10,7 @@ PKG_RELEASE:=32
 PKG_FLAGS:=essential
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=https://www.busybox.net/downloads \
-  https://sources.buildroot.net/$(PKG_NAME)
+PKG_SOURCE_URL:=https://www.busybox.net/downloads
 PKG_HASH:=6843ba7977081e735fa0fdb05893e3c002c8c5ad7c9c80da206e603cc0ac47e7
 
 PKG_BUILD_DEPENDS:=BUSYBOX_CONFIG_PAM:libpam
@@ -51,6 +50,7 @@ define Package/busybox
 $(call Package/busybox/Default)
   CONFLICTS:=busybox-selinux
   VARIANT:=default
+  DEFAULT_VARIANT:=1
 endef
 
 define Package/busybox-selinux

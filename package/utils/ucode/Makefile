@@ -1,9 +1,7 @@
-#
 # Copyright (C) 2020-2021 Jo-Philipp Wich <jo@mein.io>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
-#
 
 include $(TOPDIR)/rules.mk
 

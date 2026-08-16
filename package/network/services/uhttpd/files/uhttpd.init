@@ -37,11 +37,11 @@ generate_keys() {
 
 	config_get days "$cfg" days "90"
 	config_get bits "$cfg" bits "2048"
-	config_get country "$cfg" country "ZZ"
-	config_get state "$cfg" state "Somewhere"
-	config_get location "$cfg" location "Unknown"
+	config_get country "$cfg" country "XX"
+	config_get state "$cfg" state "XX"
+	config_get location "$cfg" location "XX"
 	config_get organization "$cfg" organization
-	config_get commonname "$cfg" commonname "OpenWrt"
+	config_get commonname "$cfg" commonname "Unknown"
 	config_get key_type "$cfg" key_type "ec"
 	config_get ec_curve "$cfg" ec_curve "P-256"
 
@@ -49,7 +49,7 @@ generate_keys() {
 	local GENKEY_CMD=""
 	local KEY_OPTS=""
 	local EXTRA_OPTS=""
-	local UNIQUEID=$(dd if=/dev/urandom bs=1 count=4 | hexdump -e '1/1 "%02x"')
+	local UNIQUEID=$(dd if=/dev/urandom bs=4 count=1 2>/dev/null | hexdump -e '1/1 "%02x"')
 
 	if [ -x "$OPENSSL_BIN" ]; then
 		GENKEY_CMD="$OPENSSL_BIN req -x509 -sha256 -outform der -nodes"
@@ -63,7 +63,7 @@ generate_keys() {
 	[ -n "$GENKEY_CMD" ] && {
 		$GENKEY_CMD \
 			-days "$days" -newkey ${KEY_OPTS} -keyout "${UHTTPD_KEY}.new" -out "${UHTTPD_CERT}.new" \
-			-subj /C="$country"/ST="$state"/L="$location"/O="${organization:-OpenWrt$UNIQUEID}"/CN="$commonname" \
+			-subj "/C=$country/ST=$state/L=$location/O=${organization:-OpenWrt$UNIQUEID}/CN=$commonname" \
 			$EXTRA_OPTS
 
 		sync

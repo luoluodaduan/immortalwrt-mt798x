@@ -1,6 +1,6 @@
 --- a/src/dnsmasq.c
 +++ b/src/dnsmasq.c
-@@ -107,10 +107,6 @@
+@@ -114,10 +114,6 @@
    
    read_opts(argc, argv, compile_opts);
   
@@ -13,7 +13,7 @@
  
 --- a/src/dnsmasq.h
 +++ b/src/dnsmasq.h
-@@ -1281,7 +1281,7 @@
+@@ -1310,7 +1310,7 @@
    int inotifyfd;
  #endif
  #if defined(HAVE_LINUX_NETWORK)
@@ -22,7 +22,7 @@
  #elif defined(HAVE_BSD_NETWORK)
    int dhcp_raw_fd, dhcp_icmp_fd, routefd;
  #endif
-@@ -1494,9 +1494,6 @@
+@@ -1544,9 +1544,6 @@
  void close_fds(long max_fd, int spare1, int spare2, int spare3);
  int wildcard_match(const char* wildcard, const char* match);
  int wildcard_matchn(const char* wildcard, const char* match, int num);
@@ -127,11 +127,10 @@
       my_syslog(LOG_ERR, _("failed to update ipset %s: %s"), setname, strerror(errno));
 --- a/src/util.c
 +++ b/src/util.c
-@@ -901,22 +901,3 @@
- 
+@@ -928,25 +928,6 @@
    return (!num) || (*wildcard == *match);
  }
--
+ 
 -#ifdef HAVE_LINUX_NETWORK
 -int kernel_version(void)
 -{
@@ -150,3 +149,7 @@
 -  return version * 256 + (split ? atoi(split) : 0);
 -}
 -#endif
+-
+ #define hash_ptr(x) (((uintptr_t)(x)) & 0xffffff)
+ 
+ void *whine_malloc_real(const char *func, unsigned int line, size_t size)

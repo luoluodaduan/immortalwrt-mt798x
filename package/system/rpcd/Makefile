@@ -9,7 +9,7 @@ PKG_NAME:=rpcd
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL=$(PROJECT_GIT)/project/rpcd.git
+PKG_SOURCE_URL:=https://github.com/openwrt/rpcd.git
 PKG_SOURCE_DATE:=2022-02-19
 PKG_SOURCE_VERSION:=8d26a1ba3a175016b342cc5e25d340c08ae20eed
 PKG_MAINTAINER:=Jo-Philipp Wich <jo@mein.io>

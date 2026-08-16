@@ -9,7 +9,7 @@ PKG_NAME:=procd
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL=$(PROJECT_GIT)/project/procd.git
+PKG_SOURCE_URL:=https://github.com/openwrt/procd.git
 PKG_SOURCE_DATE:=2021-07-10
 PKG_SOURCE_VERSION:=2dcefbd6094681dcbd2d7ff608590e74425a9220
 PKG_MIRROR_HASH:=6f2615230a1db09740e8125517488a53b62baef0731b9adbd377765cad130289
@@ -55,6 +55,7 @@ define Package/procd
 $(call Package/procd/Default)
   VARIANT:=default
   CONFLICTS:=procd-selinux
+  DEFAULT_VARIANT:=1
 endef
 
 define Package/procd-selinux

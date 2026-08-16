@@ -1,0 +1,11 @@
+--- a/iptables/xshared.c
++++ b/iptables/xshared.c
+@@ -1307,7 +1307,7 @@
+ 		return;
+ 
+ 	if (args->family != NFPROTO_ARP)
+-		xtables_error(PARAMETER_PROBLEM, msg);
++		xtables_error(PARAMETER_PROBLEM, "%s", msg);
+ 
+ 	fprintf(stderr, "%s", msg);
+ }

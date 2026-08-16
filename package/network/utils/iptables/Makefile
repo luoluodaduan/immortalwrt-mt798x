@@ -7,12 +7,12 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=iptables
-PKG_VERSION:=1.8.7
-PKG_RELEASE:=2
+PKG_VERSION:=1.8.8
+PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=https://netfilter.org/projects/iptables/files
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_HASH:=c109c96bb04998cd44156622d36f8e04b140701ec60531a10668cfdff5e8d8f0
+PKG_HASH:=71c75889dc710676631553eb1511da0177bbaaf1b551265b912d236c3f51859f
 
 PKG_FIXUP:=autoreconf
 PKG_FLAGS:=nonshared
@@ -53,6 +53,7 @@ define Package/iptables/config
   config IPTABLES_CONNLABEL
     bool "Enable Connlabel support"
     default n
+
   config IPTABLES_NFTABLES
     bool "Enable Nftables support"
     default n
@@ -411,7 +412,6 @@ define Build/InstallDev
 	$(CP) $(PKG_BUILD_DIR)/include/iptables/*.h $(1)/usr/include/iptables/
 	$(CP) $(PKG_BUILD_DIR)/include/iptables.h $(1)/usr/include/
 	$(CP) $(PKG_BUILD_DIR)/include/ip6tables.h $(1)/usr/include/
-	$(CP) $(PKG_BUILD_DIR)/include/libipulog $(1)/usr/include/
 	$(CP) $(PKG_BUILD_DIR)/include/libiptc $(1)/usr/include/
 	$(CP) $(PKG_INSTALL_DIR)/usr/include/* $(1)/usr/include/
 	$(INSTALL_DIR) $(1)/usr/lib
@@ -426,9 +426,11 @@ endef
 
 define Package/iptables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/xtables-legacy-multi $(1)/usr/sbin/
-	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/iptables{,-restore,-save} $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/lib/iptables
+	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/xtables-legacy-multi $(1)/usr/sbin/
+	ln -sf xtables-legacy-multi $(1)/usr/sbin/iptables
+	ln -sf xtables-legacy-multi $(1)/usr/sbin/iptables-save
+	ln -sf xtables-legacy-multi $(1)/usr/sbin/iptables-restore
 endef
 
 define Package/iptables-nft/install
@@ -440,7 +442,9 @@ endef
 
 define Package/ip6tables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/ip6tables{,-restore,-save} $(1)/usr/sbin/
+	ln -sf xtables-legacy-multi $(1)/usr/sbin/ip6tables
+	ln -sf xtables-legacy-multi $(1)/usr/sbin/ip6tables-save
+	ln -sf xtables-legacy-multi $(1)/usr/sbin/ip6tables-restore
 endef
 
 define Package/ip6tables-nft/install

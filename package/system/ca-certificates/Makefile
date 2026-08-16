@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ca-certificates
-PKG_VERSION:=20250419
+PKG_VERSION:=20260601
 PKG_RELEASE:=1
 PKG_MAINTAINER:=
 
@@ -15,7 +15,7 @@ PKG_LICENSE_FILES:=debian/copyright
 
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://ftp.debian.org/debian/pool/main/c/ca-certificates
-PKG_HASH:=33b44ef78653ecd3f0f2f13e5bba6be466be2e7da72182f737912b81798ba5d2
+PKG_HASH:=7ab6301f7f34eef90a4d278647c260bc0762e0e14561f4649854cf4b0d4bea21
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -49,6 +49,7 @@ endef
 define Package/ca-certificates/install
 	$(INSTALL_DIR) $(1)/etc/ssl/certs
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/share/ca-certificates/*/*.crt $(1)/etc/ssl/certs/
+
 	for CERTFILE in `ls -1 $(1)/etc/ssl/certs`; do \
 		HASH=`openssl x509 -hash -noout -in $(1)/etc/ssl/certs/$$$$CERTFILE` ; \
 		SUFFIX=0 ; \

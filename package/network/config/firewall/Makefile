@@ -10,7 +10,7 @@ PKG_NAME:=firewall
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL=$(PROJECT_GIT)/project/firewall3.git
+PKG_SOURCE_URL:=https://github.com/openwrt/firewall3.git
 PKG_SOURCE_DATE:=2024-10-18
 PKG_SOURCE_VERSION:=1aef9791a21e3d15d4357060f09a7bb9ed3d6e4e
 PKG_MIRROR_HASH:=61a4f03a34edf5bf25c13b7ae04e4be40ecbaebff77b9f2d1e730dcaa2c77143
@@ -40,6 +40,7 @@ endef
 
 TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
 TARGET_LDFLAGS += -Wl,--gc-sections -flto
+
 CMAKE_OPTIONS += $(if $(CONFIG_IPV6),,-DDISABLE_IPV6=1)
 
 define Package/firewall/install
