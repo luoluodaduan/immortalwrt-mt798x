@@ -5,21 +5,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check Out
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Initialization Environment
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo -E apt-get -yqq update
-          sudo -E apt-get -yqq install bison build-essential device-tree-compiler flex gcc-aarch64-linux-gnu libssl-dev \
+          sudo apt-get -yqq update
+          sudo apt-get -yqq install bison build-essential device-tree-compiler flex gcc-aarch64-linux-gnu libssl-dev \
             qemu-user-static bc python3 python3-pyelftools
-          sudo -E apt-get -yqq autoremove --purge
-          sudo -E apt-get -yqq clean
+          sudo apt-get -yqq autoremove --purge
+          sudo apt-get -yqq clean
 
       - name: Build U-Boot AX6000
         run: |
